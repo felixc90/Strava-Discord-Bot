@@ -1,5 +1,5 @@
-import fetch from 'node-fetch'
-import dotenv from 'dotenv'
+const fetch = require('node-fetch');
+const dotenv = require('dotenv')
 dotenv.config()
 
 // data store
@@ -9,7 +9,7 @@ var DATA = {
     'week' : -1,
 }
 
-export function addUser(req, res, next) {
+function addUser(req, res, next) {
     const code = req.url.split('&')[1].substring(5);
     authoriseUser(code);
     res.json({message: "New user added!"});
@@ -50,7 +50,7 @@ function authoriseUser(code){
 }
 
 
-export function updateLeaderboard(req, res, next) {
+function updateLeaderboard(req, res, next) {
     console.log('Updating leaderboard...')
     for (let user = 0; user < DATA.users.length; user++) {
         reAuthorize(user)
@@ -113,3 +113,8 @@ function getActivities(res, user) {
             console.log(DATA.users[user].weekly_stats)
         })
 }
+
+module.exports = {
+    addUser: addUser,
+    updateLeaderboard: updateLeaderboard,
+  };

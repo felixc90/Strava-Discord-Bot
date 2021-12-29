@@ -1,5 +1,5 @@
-import express from 'express'
-import {addUser, updateLeaderboard} from './strava_api.js'
+const express = require('express')
+const {addUser, updateLeaderboard} = require('./strava_api.js')
 
 const router  = express.Router(); 
 

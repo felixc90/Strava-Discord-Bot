@@ -1,10 +1,19 @@
-import { Client, Intents } from 'discord.js'
-import dotenv from 'dotenv'
+const fs = require('fs');
+const { Client, Collection, Intents } = require('discord.js');
+const dotenv = require('dotenv')
 
 dotenv.config();
 const myIntents = new Intents();
 myIntents.add(Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILDS);
 const client = new Client({ intents: myIntents });
+
+client.commands = new Collection();
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'))
+
+for (const file of commandFiles) {
+	const command = require(`./commands/${file}`);
+    client.commands.set(command.data.name, command)
+}
 
 client.on("ready", () => {
     console.log(`Logged in as ${client.user.tag}!`)
@@ -13,15 +22,14 @@ client.on("ready", () => {
 client.on('interactionCreate', async interaction => {
 	if (!interaction.isCommand()) return;
 
-	const { commandName } = interaction;
-
-	if (commandName === 'ping') {
-		await interaction.reply('Pong!');
-	} else if (commandName === 'server') {
-		await interaction.reply(`Server name: ${interaction.guild.name}\nTotal members: ${interaction.guild.memberCount}`);
-	} else if (commandName === 'user') {
-		await interaction.reply(`Your tag: ${interaction.user.tag}\nYour id: ${interaction.user.id}`);
-	}
+	const command = client.commands.get(interaction.commandName)
+    if (!command) return
+    try {
+        await command.execute(interaction)
+    } catch (error) {
+        console.error(error)
+        await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+    }
 });
 
 client.on("messageCreate", msg => {
