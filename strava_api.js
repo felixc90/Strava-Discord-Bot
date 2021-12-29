@@ -1,4 +1,6 @@
 import fetch from 'node-fetch'
+import dotenv from 'dotenv'
+dotenv.config()
 
 // data store
 var DATA = {
@@ -67,7 +69,7 @@ function reAuthorize(user) {
         body: JSON.stringify({
             client_id: '71610',
             client_secret: process.env.STRAVA_CLIENT_SECRET,
-            refresh_token: DATA.users[i].refresh_token,
+            refresh_token: DATA.users[user].refresh_token,
             grant_type: 'refresh_token'
         })
 
@@ -94,12 +96,12 @@ function getActivities(res, user) {
                 }
                 DATA.week = start_of_week
             }
-            console.log(`Computing statistics for ${DATA.week}`)
+            console.log(`Computing statistics for week starting ${DATA.week}`)
             for (let run = 0; run < data.length; run++) {
                 const date_of_run = new Date(data[run].start_date_local)
                 // Do not update user stats if run is in a previous week or
                 // if we have reached a previously updated run
-                if (date_of_run < start_of_week || data[run].id ==
+                if (date_of_run < start_of_week || data[run].id ===
                     DATA.users[user].weekly_stats.most_recent_recorded_id) {
                     break;
                 }
