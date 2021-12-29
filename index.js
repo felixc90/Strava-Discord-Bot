@@ -1,8 +1,8 @@
-const fs = require('fs');
 const { Client, Collection, Intents } = require('discord.js');
 const dotenv = require('dotenv')
-
+const fs = require('fs');
 dotenv.config();
+
 const myIntents = new Intents();
 myIntents.add(Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILDS);
 const client = new Client({ intents: myIntents });
@@ -15,10 +15,16 @@ for (const file of commandFiles) {
     client.commands.set(command.data.name, command)
 }
 
-client.on("ready", () => {
-    console.log(`Logged in as ${client.user.tag}!`)
-})
+const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'))
 
+for (const file of eventFiles) {
+    const event = require(`./events/${file}`);
+	if (event.once) {
+		client.once(event.name, (...args) => event.execute(...args));
+	} else {
+		client.on(event.name, (...args) => event.execute(...args));
+	}
+}
 client.on('interactionCreate', async interaction => {
 	if (!interaction.isCommand()) return;
 
@@ -31,37 +37,4 @@ client.on('interactionCreate', async interaction => {
         await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
     }
 });
-
-client.on("messageCreate", msg => {
-    let prefix = "+"
-    if (!msg.content.startsWith(prefix)) {
-        return
-    }
-    let command = msg.content.split(' ')[0].slice(1);
-    let args = msg.content.replace(prefix + command, '').trim();
-    switch(command) {
-        case 'I':
-            msg.reply("want")
-            break
-        case 'it':
-            msg.reply("that")
-            break
-        case 'way':
-            msg.reply("Tell")
-            break
-        case 'me':
-            msg.reply("why...")
-            break
-        case 'aint':
-            msg.reply("nothing")
-            break
-        case 'but':
-            msg.reply("a")
-            break
-        case 'heartache':
-            msg.reply("a")
-            break
-    }
-
-})
 client.login(process.env.DISCORD_TOKEN)
