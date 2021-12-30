@@ -1,6 +1,9 @@
 {
   "name": "strava-leaderboard",
   "version": "1.0.0",
+  "engines": {
+    "node": "16.x"
+  },
   "description": "",
   "main": "old_index.js",
   "scripts": {
