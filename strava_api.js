@@ -51,7 +51,7 @@ function authoriseUser(code){
                     'most_recent_recorded_id' : -1,
                 }
             })
-            fetch('http://localhost:' + (process.env.PORT || 3000) + '/update-leaderboard', {
+            fetch('http://localhost:' + process.env.PORT + '/update-leaderboard', {
                 method: 'get'
             })
             console.log(DATA.store)

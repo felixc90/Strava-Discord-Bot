@@ -36,7 +36,7 @@ async function readData() {
     module.exports.store = data
 }
 
-const listener = app.listen(process.env.PORT || 3000, () => {
+const listener = app.listen(process.env.PORT, () => {
     if (fs.existsSync('./database.json')) {
         readData()
     } else {
