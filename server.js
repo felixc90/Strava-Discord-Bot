@@ -1,12 +1,13 @@
 const express = require('express')
 const fs = require('fs');
-const {addUser, updateLeaderboard} = require('./strava_api.js')
+const {addUser, updateLeaderboard, initMessage} = require('./strava_api.js')
 
 const router  = express.Router(); 
 
 // routes
 router.get('/new-user', addUser); 
 router.get('/update-leaderboard', updateLeaderboard); 
+router.get('/', initMessage); 
 
 const app = express();
 

@@ -1,9 +1,13 @@
 const fetch = require('node-fetch');
 const dotenv = require('dotenv');
 const fs = require('fs');
-const DATA = require('./server')
+const DATA = require('./server');
 
 dotenv.config()
+
+function initMessage(req, res, next) {
+    res.json({message: "It worked!"});
+};
 
 function addUser(req, res, next) {
     const code = req.url.split('&')[1].substring(5);
@@ -47,7 +51,7 @@ function authoriseUser(code){
                     'most_recent_recorded_id' : -1,
                 }
             })
-            fetch('http://localhost:' + process.env.PORT + '/update-leaderboard', {
+            fetch('http://localhost:' + (process.env.PORT || 3000) + '/update-leaderboard', {
                 method: 'get'
             })
             console.log(DATA.store)
@@ -129,4 +133,5 @@ function getActivities(res, user) {
 module.exports = {
     addUser: addUser,
     updateLeaderboard: updateLeaderboard,
+    initMessage: initMessage
 };
