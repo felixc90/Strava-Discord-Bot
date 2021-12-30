@@ -46,6 +46,9 @@ function authoriseUser(code){
                     'most_recent_recorded_id' : -1,
                 }
             })
+            fetch('http://localhost:3000/update-leaderboard', {
+                method: 'get'
+            })
             console.log(DATA.store)
             }
         )
@@ -110,7 +113,8 @@ function getActivities(res, user) {
                 DATA.store.users[user].weekly_stats.most_recent_recorded_id = data[run].id
                 DATA.store.users[user].weekly_stats.total_distance += data[run].distance / 1000
                 DATA.store.users[user].weekly_stats.total_time += data[run].moving_time / 60
-                if (data[run].map.summary_polyline != null) {
+                if (data[run].map.summary_polyline != null &&
+                    !DATA.store.routes.includes(data[run].map.summary_polyline)) {
                     DATA.store.routes.push(data[run].map.summary_polyline)
                 }
             }

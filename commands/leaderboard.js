@@ -8,15 +8,21 @@ module.exports = {
 		.setDescription('Displays the weekly Strava el'),
 };
 
-async function getUsers() {
+async function getUsers(useTime) {
     return new Promise((resolve) => {
         WeeklyData(function (err, content) {
             medals = ['🥇','🥈','🥉', '4th', '5th','6th','7th','8th','9th','10th']
             data = JSON.parse(content.toString());
-            data.users.sort((user1, user2) =>  user2.weekly_stats.total_distance - user1.weekly_stats.total_distance)
+            data.users.sort((user1, user2) =>  useTime ? 
+            user2.weekly_stats.total_time - user1.weekly_stats.total_time:
+            user2.weekly_stats.total_distance - user1.weekly_stats.total_distance
+            )
             resolve(data.users.slice(0, 10).map(user => ({
                 name: `${medals[data.users.indexOf(user)]}`,
-                value: `${Math.round(parseInt(user.weekly_stats.total_distance)*100)/100.0}km | ${
+                value: `${
+                    useTime ? 
+                        parseInt(user.weekly_stats.total_time) + 'min' :
+                        Math.round(parseInt(user.weekly_stats.total_distance)*100)/100.0 + 'km'} | ${
                     user.name + (user.username === null ? '' : ` (${user.username})`)
                 }`,
                 inline: false,
@@ -51,12 +57,12 @@ module.exports = {
 
             const leaderboardEmbed = {
                 color: 0x0099ff,
-                title: `Weekly Strava Leaderboard (${useTime ? 'Time' : 'Distance'})`,
-                // description: 'Some description here',
+                title: 'Weekly Strava Leaderboard',
+                description: `======based on ${useTime ? 'time' : 'distance'}======`,
                 thumbnail: {
                     url: 'https://i.imgur.com/S1lXpBX.png',
                 },
-                fields: await getUsers(),
+                fields: await getUsers(useTime),
                 timestamp: new Date(),
             };
             await interaction.reply({ embeds: [leaderboardEmbed] })
