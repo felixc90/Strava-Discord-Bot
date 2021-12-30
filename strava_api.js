@@ -1,8 +1,8 @@
 const fetch = require('node-fetch');
-const dotenv = require('dotenv')
+const dotenv = require('dotenv');
+const fs = require('fs');
 dotenv.config()
 
-// data store
 var DATA = {
     'users' : [],
     'routes' : [],
@@ -32,12 +32,18 @@ function authoriseUser(code){
         })
     }).then(res => res.json())
         .then(data => {
+            console.log(DATA)
+            const userIds = DATA.users.map(user => user.id)
+            if (userIds.includes(data.athlete.id)) {
+                return;
+            }
             DATA.users.push(
             {
                 'id' : data.athlete.id,
                 'refresh_token' : data.refresh_token,
                 'name' : `${data.athlete.firstname} ${data.athlete.lastname}`,
                 'profile' : data.athlete.profile,
+                'username' : data.athlete.username,
                 'weekly_stats' : {
                     'total_distance' : 0,
                     'total_time' : 0,
@@ -108,13 +114,17 @@ function getActivities(res, user) {
                 DATA.users[user].weekly_stats.most_recent_recorded_id = data[run].id
                 DATA.users[user].weekly_stats.total_distance += data[run].distance / 1000
                 DATA.users[user].weekly_stats.total_time += data[run].moving_time / 60
-                DATA.routes.push(data[run].map.summary_polyline)
+                if (data[run].map.summary_polyline != null) {
+                    DATA.routes.push(data[run].map.summary_polyline)
+                }
             }
             console.log(DATA.users[user].weekly_stats)
+            let json = JSON.stringify(DATA, null, 2);
+            fs.writeFile('database.json', json, () => {});
         })
 }
 
 module.exports = {
     addUser: addUser,
     updateLeaderboard: updateLeaderboard,
-  };
+};
