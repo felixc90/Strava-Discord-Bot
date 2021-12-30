@@ -1,13 +1,9 @@
 const fetch = require('node-fetch');
 const dotenv = require('dotenv');
 const fs = require('fs');
-dotenv.config()
+const DATA = require('./server')
 
-var DATA = {
-    'users' : [],
-    'routes' : [],
-    'week' : -1,
-}
+dotenv.config()
 
 function addUser(req, res, next) {
     const code = req.url.split('&')[1].substring(5);
@@ -32,12 +28,12 @@ function authoriseUser(code){
         })
     }).then(res => res.json())
         .then(data => {
-            console.log(DATA)
-            const userIds = DATA.users.map(user => user.id)
+            // console.log(DATA.store)
+            const userIds = DATA.store.users.map(user => user.id)
             if (userIds.includes(data.athlete.id)) {
                 return;
             }
-            DATA.users.push(
+            DATA.store.users.push(
             {
                 'id' : data.athlete.id,
                 'refresh_token' : data.refresh_token,
@@ -50,7 +46,7 @@ function authoriseUser(code){
                     'most_recent_recorded_id' : -1,
                 }
             })
-            console.log(DATA)
+            console.log(DATA.store)
             }
         )
 }
@@ -58,7 +54,7 @@ function authoriseUser(code){
 
 function updateLeaderboard(req, res, next) {
     console.log('Updating leaderboard...')
-    for (let user = 0; user < DATA.users.length; user++) {
+    for (let user = 0; user < DATA.store.users.length; user++) {
         reAuthorize(user)
     }
     res.json({message: "Leaderboard updated!"});
@@ -75,7 +71,7 @@ function reAuthorize(user) {
         body: JSON.stringify({
             client_id: '71610',
             client_secret: process.env.STRAVA_CLIENT_SECRET,
-            refresh_token: DATA.users[user].refresh_token,
+            refresh_token: DATA.store.users[user].refresh_token,
             grant_type: 'refresh_token'
         })
 
@@ -94,32 +90,32 @@ function getActivities(res, user) {
             date.setDate(date.getDate() - date.getDay() + 1)
             const start_of_week = new Date(date.toDateString())
             // If new week, reset all statistics
-            if (start_of_week != DATA.week) {
-                DATA.users[user].weekly_stats = {
+            if (start_of_week != DATA.store.week) {
+                DATA.store.users[user].weekly_stats = {
                     'total_distance' : 0,
                     'total_time' : 0,
                     'most_recent_recorded_id' : -1,
                 }
-                DATA.week = start_of_week
+                DATA.store.week = start_of_week
             }
-            console.log(`Computing statistics for week starting ${DATA.week}`)
+            console.log(`Computing statistics for week starting ${DATA.store.week}`)
             for (let run = 0; run < data.length; run++) {
                 const date_of_run = new Date(data[run].start_date_local)
                 // Do not update user stats if run is in a previous week or
                 // if we have reached a previously updated run
                 if (date_of_run < start_of_week || data[run].id ===
-                    DATA.users[user].weekly_stats.most_recent_recorded_id) {
+                    DATA.store.users[user].weekly_stats.most_recent_recorded_id) {
                     break;
                 }
-                DATA.users[user].weekly_stats.most_recent_recorded_id = data[run].id
-                DATA.users[user].weekly_stats.total_distance += data[run].distance / 1000
-                DATA.users[user].weekly_stats.total_time += data[run].moving_time / 60
+                DATA.store.users[user].weekly_stats.most_recent_recorded_id = data[run].id
+                DATA.store.users[user].weekly_stats.total_distance += data[run].distance / 1000
+                DATA.store.users[user].weekly_stats.total_time += data[run].moving_time / 60
                 if (data[run].map.summary_polyline != null) {
-                    DATA.routes.push(data[run].map.summary_polyline)
+                    DATA.store.routes.push(data[run].map.summary_polyline)
                 }
             }
-            console.log(DATA.users[user].weekly_stats)
-            let json = JSON.stringify(DATA, null, 2);
+            console.log(DATA.store.users[user].weekly_stats)
+            let json = JSON.stringify(DATA.store, null, 2);
             fs.writeFile('database.json', json, () => {});
         })
 }
