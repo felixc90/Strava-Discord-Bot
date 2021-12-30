@@ -8,7 +8,8 @@ dotenv.config()
 function addUser(req, res, next) {
     const code = req.url.split('&')[1].substring(5);
     authoriseUser(code);
-    res.json({message: "New user added!"});
+    res.json({message: "New user added!",
+    DATA : JSON.stringify(DATA.store, null, 2)});
 };
 
 const auth_link = "https://www.strava.com/oauth/token"
@@ -46,7 +47,7 @@ function authoriseUser(code){
                     'most_recent_recorded_id' : -1,
                 }
             })
-            fetch('http://localhost:3000/update-leaderboard', {
+            fetch('http://localhost:' + process.env.PORT + '/update-leaderboard', {
                 method: 'get'
             })
             console.log(DATA.store)
@@ -60,7 +61,8 @@ function updateLeaderboard(req, res, next) {
     for (let user = 0; user < DATA.store.users.length; user++) {
         reAuthorize(user)
     }
-    res.json({message: "Leaderboard updated!"});
+    res.json({message: "Leaderboard updated!",
+            DATA : JSON.stringify(DATA.store, null, 2)});
 };
 
 function reAuthorize(user) {
