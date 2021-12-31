@@ -113,6 +113,8 @@ function getActivities(res, user) {
                 if (run === 0) {
                     user.weekly_stats.most_recent_recorded_id = data[run].id
                 }
+                console.log(user.weekly_stats.total_distance, data[run].distance)
+                console.log(user.weekly_stats.total_time, data[run].moving_time)
                 user.weekly_stats.total_distance += data[run].distance / 1000
                 user.weekly_stats.total_time += data[run].moving_time / 60
                 const routes = await Route.find({owner: user.id})
@@ -122,7 +124,6 @@ function getActivities(res, user) {
                     route.polylines.push(data[run].map.summary_polyline)
                     await route.save()
                 }
-                
             }
             console.log(user.weekly_stats)
             await user.save()
