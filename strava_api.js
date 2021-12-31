@@ -102,6 +102,7 @@ function getActivities(res, user) {
             }
             console.log(`Computing statistics for week starting ${time.week}`)
             for (let run = 0; run < data.length; run++) {
+                console.log(run)
                 const date_of_run = new Date(data[run].start_date_local)
                 // Do not update user stats if run is in a previous week or
                 // if we have reached a previously updated run
@@ -110,6 +111,7 @@ function getActivities(res, user) {
                     user.weekly_stats.most_recent_recorded_id) {
                     break;
                 }
+                console.log(run)
                 if (run === 0) {
                     user.weekly_stats.most_recent_recorded_id = data[run].id
                 }
