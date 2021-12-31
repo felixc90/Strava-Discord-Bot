@@ -105,11 +105,14 @@ function getActivities(res, user) {
                 const date_of_run = new Date(data[run].start_date_local)
                 // Do not update user stats if run is in a previous week or
                 // if we have reached a previously updated run
-                if (date_of_run < start_of_week || data[run].id ===
+                console.log(parseInt(data[run].id), user.weekly_stats.most_recent_recorded_id)
+                if (date_of_run < start_of_week || parseInt(data[run].id) ===
                     user.weekly_stats.most_recent_recorded_id) {
                     break;
                 }
-                user.weekly_stats.most_recent_recorded_id = data[run].id
+                if (run === 0) {
+                    user.weekly_stats.most_recent_recorded_id = data[run].id
+                }
                 user.weekly_stats.total_distance += data[run].distance / 1000
                 user.weekly_stats.total_time += data[run].moving_time / 60
                 const routes = await Route.find({owner: user.id})

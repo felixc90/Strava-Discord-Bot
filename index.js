@@ -1,5 +1,6 @@
 const { Client, Collection, Intents } = require('discord.js');
 const dotenv = require('dotenv')
+const mongoose = require('mongoose')
 const fs = require('fs');
 dotenv.config();
 
@@ -39,4 +40,9 @@ client.on('interactionCreate', async interaction => {
     }
 });
 
-client.login(process.env.DISCORD_TOKEN)
+var url = process.env.MONGODB_CONNECT
+mongoose
+    .connect(url, {useNewUrlParser : true, useUnifiedTopology : true})
+    .then(() => {
+        client.login(process.env.DISCORD_TOKEN)
+    })
