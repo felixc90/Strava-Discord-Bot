@@ -107,6 +107,10 @@ function getActivities(res, user) {
                 // Do not update user stats if run is in a previous week or
                 // if we have reached a previously updated run
                 console.log(parseInt(data[run].id), user.weekly_stats.most_recent_recorded_id)
+                console.log(date_of_run, start_of_week)
+                console.log(date_of_run < start_of_week)
+                console.log(date_of_run < start_of_week || parseInt(data[run].id) ===
+                user.weekly_stats.most_recent_recorded_id)
                 if (date_of_run < start_of_week || parseInt(data[run].id) ===
                     user.weekly_stats.most_recent_recorded_id) {
                     break;
