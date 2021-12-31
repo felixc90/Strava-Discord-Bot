@@ -122,10 +122,10 @@ function getActivities(res, user) {
                     route.polylines.push(data[run].map.summary_polyline)
                     await route.save()
                 }
-                await user.save()
+                
             }
-            
             console.log(user.weekly_stats)
+            await user.save()
         })
 }
 

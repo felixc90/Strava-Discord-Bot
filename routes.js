@@ -1,6 +1,8 @@
 const express = require('express')
 const { authoriseUser, reAuthorize } = require('./strava_api')
-const User = require('./models/User')
+const User = require('./models/User');
+const Time = require('./models/Time');
+const Route = require('./models/Route');
 const router  = express.Router(); 
 
 router.get('/', (req, res) => {
@@ -14,7 +16,7 @@ router.get('/add-user', (req, res) => {
 });
 
 router.get('/users', async (req, res) => {
-    const users = await User.find({}, 'id name refresh_token username profile')
+    const users = await User.find({}, 'id name refresh_token username profile weekly_stats')
     res.send({listUsers: users});
 });
 
@@ -22,10 +24,17 @@ router.get('/update-users', async (req, res) => {
     console.log('Updating leaderboard...')
     const users = await User.find({})
     for (let i = 0; i < users.length; i++) {
-        // console.log(users[i])
         reAuthorize(users[i])
     }
     res.send({message: "Leaderboard updated!"});
 }); 
+
+router.get('/clear', async (req, res) => {
+    await User.deleteMany()
+    await Route.deleteMany()
+    await Time.deleteMany()
+    res.send({message: "Cleared database!"});
+});
+
 
 module.exports = router
