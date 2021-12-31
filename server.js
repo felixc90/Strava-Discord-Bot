@@ -1,48 +1,23 @@
 const express = require('express')
-const fs = require('fs');
-const {addUser, updateLeaderboard, initMessage} = require('./strava_api.js')
+const mongoose = require('mongoose')
+const dotenv = require('dotenv')
+const routes = require('./routes')
 
-const router  = express.Router(); 
+dotenv.config()
 
-// routes
-router.get('/new-user', addUser); 
-router.get('/update-leaderboard', updateLeaderboard); 
-router.get('/', initMessage); 
+var app = express();
 
-const app = express();
+var url = process.env.MONGODB_CONNECT
 
-app.use(express.json());
+mongoose
+    .connect(url, {useNewUrlParser : true, useUnifiedTopology : true})
+    .then(() => {
+        app.use(express.json());
+        
+        app.use('/', routes);
 
-app.use('/', router); // to use the routes
+        app.listen(process.env.PORT || 3000, () => {
+            console.log('Your app is listening on port ' + 3000)
+        })
+    })
 
-const DATA = {
-    'users' : [],
-    'routes' : [],
-    'week' : -1,
-}
-
-async function readFile(path) {
-    return new Promise((resolve, reject) => {
-      fs.readFile(path, 'utf8', function (err, data) {
-        if (err) {
-          reject(err);
-        }
-        resolve(JSON.parse(data.toString()));
-      });
-    });
-  }
-async function readData() {
-    let data = await readFile("./database.json");
-    module.exports.store = data
-}
-
-const listener = app.listen(process.env.PORT || 3000, () => {
-    if (fs.existsSync('./database.json')) {
-        readData()
-    } else {
-        let json = JSON.stringify(DATA, null, 2);
-        fs.writeFile('database.json', json, () => {});
-        module.exports.store = DATA
-    }
-    console.log('Your app is listening on port ' + listener.address().port)
-})
