@@ -1,11 +1,13 @@
 const mongoose = require('mongoose')
 
 var schema = mongoose.Schema({
-    'id' : Number,
-    'name' : String,
+    'strava_id' : Number,
+    'discord_id' : Number,
     'refresh_token' : String,
+    'name' : String,
     'username' : String,
     'profile' : String,
+    'guilds' : [Number],
     'weekly_stats' : {
         'total_distance' : Number,
         'total_time' : Number,

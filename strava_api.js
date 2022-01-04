@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 const dotenv = require('dotenv');
-const User  = require('./models/Guild');
+const User  = require('./models/User');
 const Time  = require('./models/Time');
 const Guild  = require('./models/Guild');
 const Route  = require('./models/Route');
@@ -9,7 +9,7 @@ dotenv.config()
 
 const auth_link = "https://www.strava.com/oauth/token"
 
-function authoriseUser(code) {
+function authoriseUser(discord_data, code) {
     fetch(auth_link,{
         method: 'post',
         headers: {
@@ -26,11 +26,13 @@ function authoriseUser(code) {
         .then(async data => {
             console.log('Adding new user...')
             const user = new User({
-                    'id' : data.athlete.id,
+                    'strava_id' : data.athlete.id,
+                    'discord_id' : discord_data.user_id,
                     'refresh_token' : data.refresh_token,
                     'name' : `${data.athlete.firstname} ${data.athlete.lastname}`,
+                    'username' : discord_data.username,
                     'profile' : data.athlete.profile,
-                    'username' : data.athlete.username,
+                    'guilds' : [discord_data.guild_id],
                     'weekly_stats' : {
                         'total_distance' : 0,
                         'total_time' : 0,
@@ -41,8 +43,10 @@ function authoriseUser(code) {
                 'owner' : data.athlete.id,
                 'polylines' : []
             })
-            const findUser = await User.find({id : data.athlete.id})
-            if (findUser.length != 0) return
+            const findGuild = await Guild.find({guild_id : discord_data.guild_id})
+            let guild = findGuild[0]
+            guild.members.push(user.discord_id)
+            await guild.save()
             await user.save()
             await route.save()
             console.log('Done!')

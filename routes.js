@@ -1,18 +1,18 @@
 const express = require('express')
 const { authoriseUser, reAuthorize, addGuild } = require('./strava_api')
-const User = require('./models/Guild');
+const User = require('./models/User');
 const Time = require('./models/Time');
 const Route = require('./models/Route');
+const Guild = require('./models/Guild');
 const router  = express.Router(); 
 
 router.get('/', (req, res) => {
     res.json({message: "It worked!"});
 });
 
-router.get('/add-user/:guild_id/:user_id/:username', (req, res) => {
+router.get('/add-user/:guild_id/:user_id/:username', async (req, res) => {
     const code = req.query.code;
-    console.log(req.params)
-    authoriseUser(code);
+    authoriseUser(req.params, code);
     res.send({message: "New user added!"});
 });
 
