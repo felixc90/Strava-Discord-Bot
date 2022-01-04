@@ -1,7 +1,8 @@
 const fetch = require('node-fetch');
 const dotenv = require('dotenv');
-const User  = require('./models/User');
+const User  = require('./models/Guild');
 const Time  = require('./models/Time');
+const Guild  = require('./models/Guild');
 const Route  = require('./models/Route');
 
 dotenv.config()
@@ -130,7 +131,19 @@ function getActivities(res, user) {
         })
 }
 
+async function addGuild(guild_id) {
+    console.log(guild_id)
+    const guild = new Guild({
+        'guild_id' : guild_id,
+        'members' : [],
+    })
+    await guild.save()
+    console.log('wooo')
+    console.log(guild)
+}
+
 module.exports = {
     authoriseUser: authoriseUser,
     reAuthorize: reAuthorize,
+    addGuild: addGuild
 };

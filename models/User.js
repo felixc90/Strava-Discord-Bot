@@ -12,5 +12,4 @@ var schema = mongoose.Schema({
         'most_recent_recorded_id' : Number,
     }
 })
-
 module.exports = mongoose.model("User", schema)

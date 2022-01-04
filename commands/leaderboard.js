@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageActionRow, MessageButton } = require('discord.js');
+const { MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
 const User = require('../models/User')
 
 
@@ -16,34 +16,22 @@ module.exports = {
                 .setName('distance')
                 .setDescription('What ran the most kilometres?')),
         async execute(interaction) {
+            // console.log(interaction)
             let useTime = true;
             if (interaction.options.getSubcommand() === 'distance') {
                 useTime = false;
             }
             let leaderboard = await getLeaderboard(useTime)
-            const leaderboardEmbed = {
-                color: 0x0099ff,
-                title: `Weekly Strava Leaderboard`,
-                url: 'https://www.strava.com/oauth/authorize?client_id=71610&response_type=code&redirect_uri=https://still-caverns-77918.herokuapp.com/add-user&approval_prompt=force&scope=activity:read',
-                description: `=======based on ${useTime ? 'time' : 'distance'}=======`,
-                thumbnail: {
-                    url: 'https://imgur.com/5IUqGhY.png',
-                },
-                fields: leaderboard,
-                timestamp: new Date(),
-                footer: {
-                    text: "\u200b\nOnly the disciplined ones are free in life.\n - Eliud Kipchoge"
-                },
-            };
-            const update = new MessageActionRow()
-			.addComponents(
-				new MessageButton()
-					.setCustomId('update')
-					.setLabel('Update')
-					.setStyle('PRIMARY'),
-			);
-
-        await interaction.reply({ embeds: [leaderboardEmbed], components: [update]})
+            const leaderboardEmbed = new MessageEmbed()
+                .setColor('#0099ff')
+                .setTitle(`Weekly Strava Leaderboard`)
+                .setDescription(`=======based on ${useTime ? 'time' : 'distance'}=======`)
+                .setThumbnail('https://imgur.com/5IUqGhY.png')
+                .addFields(leaderboard)
+                .addField("Its mine now", "Add DiscordBot to your server! [Click here](https://discordapp.com/oauth2/authorize?client_id=439778986050977792&scope=bot&permissions=8)")
+                .setTimestamp()
+                .setFooter("\u200b\nOnly the disciplined ones are free in life.\n - Eliud Kipchoge");
+        await interaction.reply({ embeds: [leaderboardEmbed]})
         }
 };
 

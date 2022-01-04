@@ -27,9 +27,12 @@ for (const file of eventFiles) {
 	}
 }
 
+
 var url = process.env.MONGODB_CONNECT
 mongoose
     .connect(url, {useNewUrlParser : true, useUnifiedTopology : true})
     .then(() => {
         client.login(process.env.DISCORD_TOKEN)
+        // const Guilds = client.guilds.cache.map(guild => guild.id);
+        // console.log(Guilds);
     })

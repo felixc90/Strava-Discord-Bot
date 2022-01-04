@@ -1,6 +1,6 @@
 const express = require('express')
-const { authoriseUser, reAuthorize } = require('./strava_api')
-const User = require('./models/User');
+const { authoriseUser, reAuthorize, addGuild } = require('./strava_api')
+const User = require('./models/Guild');
 const Time = require('./models/Time');
 const Route = require('./models/Route');
 const router  = express.Router(); 
@@ -9,10 +9,18 @@ router.get('/', (req, res) => {
     res.json({message: "It worked!"});
 });
 
-router.get('/add-user', (req, res) => {
-    const code = req.url.split('&')[1].substring(5);
+router.get('/add-user/:guild_id/:user_id/:username', (req, res) => {
+    const code = req.query.code;
+    console.log(req.params)
     authoriseUser(code);
     res.send({message: "New user added!"});
+});
+
+router.post('/add-guild', (req, res) => {
+    const guild_id = req.body.guild_id;
+    console.log(guild_id)
+    addGuild(guild_id);
+    res.send({message: "New guild added!"});
 });
 
 router.get('/users', async (req, res) => {
