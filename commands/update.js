@@ -6,7 +6,7 @@ module.exports = {
 		.setName('update')
 		.setDescription('Updates the weekly stats'),
         async execute(interaction) {
-        fetch('http://127.0.0.1:3000/update-users',{
+        fetch('https://still-caverns-77918.herokuapp.com/update-users',{
             method: 'put',
             headers: {
                 'Accept': 'application/json, text/plain, */*',

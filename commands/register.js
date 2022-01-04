@@ -16,7 +16,7 @@ module.exports = {
             if (findUser.length == 0) {
                 let url = 'https://www.strava.com/oauth/authorize?client_id=71610' + 
                 '&response_type=code&redirect_uri=' +
-                'http://127.0.0.1:3000/add-user' + 
+                'https://still-caverns-77918.herokuapp.com/add-user' + 
                 `/${interaction.guild.id}` +
                 `/${interaction.user.id}` + 
                 `/${interaction.user.username}` + 
