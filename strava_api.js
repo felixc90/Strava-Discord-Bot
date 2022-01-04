@@ -121,7 +121,7 @@ function getActivities(res, user) {
                 }
                 user.weekly_stats.total_distance += data[run].distance / 1000
                 user.weekly_stats.total_time += data[run].moving_time / 60
-                const routes = await Route.find({owner: user.id})
+                const routes = await Route.find({owner: user.strava_id})
                 if (!routes[0].polylines.includes(data[run].map.summary_polyline)
                 && data[run].map.summary_polyline != null) {
                     const route = routes[0]

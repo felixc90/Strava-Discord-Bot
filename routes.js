@@ -30,10 +30,10 @@ router.get('/users', async (req, res) => {
 
 router.put('/update-users', async (req, res) => {
     console.log('Updating leaderboard...')
-    console.log(req.body.guild_id)
+    // console.log(req.body.guild_id)
     const guild = await Guild.find({guild_id: req.body.guild_id})
     const users = await User.find({discord_id : { $in: guild[0].members } })
-    console.log(users)
+    // console.log(users)
     for (let i = 0; i < users.length; i++) {
         reAuthorize(users[i])
     }
