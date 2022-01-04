@@ -5,7 +5,7 @@ const User  = require('../models/User');
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('test')
+		.setName('register')
 		.setDescription('Generates a link'),
         async execute(interaction) {
             // console.log(interaction)

@@ -100,7 +100,6 @@ function getActivities(res, user) {
                     'total_time' : 0,
                     'most_recent_recorded_id' : -1,
                 }
-                
                 time.week = start_of_week
                 await user.save()
                 await time.save()
@@ -141,8 +140,9 @@ async function addGuild(guild_id) {
         'guild_id' : guild_id,
         'members' : [],
     })
+    const findGuild = await Guild.find({guild_id: parseInt(guild_id)})
+    if (findGuild.length != 0) return
     await guild.save()
-    console.log('wooo')
     console.log(guild)
 }
 

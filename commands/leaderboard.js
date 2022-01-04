@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
 const User = require('../models/User')
+const Guild = require('../models/Guild')
 
 
 module.exports = {
@@ -21,23 +22,24 @@ module.exports = {
             if (interaction.options.getSubcommand() === 'distance') {
                 useTime = false;
             }
-            let leaderboard = await getLeaderboard(useTime)
+            let leaderboard = await getLeaderboard(useTime, interaction.guild.id)
             const leaderboardEmbed = new MessageEmbed()
                 .setColor('#0099ff')
                 .setTitle(`Weekly Strava Leaderboard`)
                 .setDescription(`=======based on ${useTime ? 'time' : 'distance'}=======`)
                 .setThumbnail('https://imgur.com/5IUqGhY.png')
                 .addFields(leaderboard)
-                .addField("Its mine now", "Add DiscordBot to your server! [Click here](https://discordapp.com/oauth2/authorize?client_id=439778986050977792&scope=bot&permissions=8)")
                 .setTimestamp()
                 .setFooter("\u200b\nOnly the disciplined ones are free in life.\n - Eliud Kipchoge");
         await interaction.reply({ embeds: [leaderboardEmbed]})
         }
 };
 
-async function getLeaderboard(useTime) {
+async function getLeaderboard(useTime, guild_id) {
     medals = ['\u200b\n🥇','🥈','🥉', '4th', '5th','6th','7th','8th','9th','10th']
-    const users = await User.find({})
+    const guild = await Guild.find({guild_id: guild_id})
+    const users = await User.find({discord_id : { $in: guild[0].members } })
+    if (users.length == 0) return {name: '👻', value: 'No records to show...', inline: false}
     users.sort((user1, user2) =>  useTime ? 
         user2.weekly_stats.total_time - user1.weekly_stats.total_time:
         user2.weekly_stats.total_distance - user1.weekly_stats.total_distance
