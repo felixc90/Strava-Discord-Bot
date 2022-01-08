@@ -34,7 +34,7 @@ module.exports = {
 async function getEmbed(useTime, guildId, pageNum) {
     let leaderboard = await getLeaderboard(useTime, guildId, pageNum)
     const leaderboardEmbed = new MessageEmbed()
-    // .setColor('#db504c')
+    // .setColor('#8c00ff')
     .setColor('0x0099ff')
     .setTitle(`Weekly Strava Leaderboard`)
     .setDescription(useTime ? '=======based on time========' : '======based on distance======')
