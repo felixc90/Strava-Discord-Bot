@@ -8,8 +8,8 @@ module.exports = {
         const Guilds = client.guilds.cache.map(guild => guild.id);
         console.log(Guilds[Guilds.length - 1]);
         fetch(
-            // 'https://still-caverns-77918.herokuapp.com/' +
-            'http://localhost:3000/' + 
+            'https://still-caverns-77918.herokuapp.com/' +
+            // 'http://localhost:3000/' + 
             'add-guild', {
             method: 'post',
             headers: {'Content-Type': 'application/json'},
