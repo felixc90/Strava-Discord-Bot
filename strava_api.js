@@ -55,7 +55,7 @@ function authoriseUser(discord_data, code) {
 }
 
 async function reAuthorize(user) {
-    fetch(auth_link, {
+    await fetch(auth_link, {
         method: 'post',
 
         headers: {
@@ -136,9 +136,14 @@ function getActivities(res, user) {
 
 async function addGuild(guild_id) {
     console.log(guild_id)
+    let users = await User.find({ guilds: guild_id } , 'discord_id')
+    users = users.map(user => user.discord_id)
+    console.log(users)
     const guild = new Guild({
         'guild_id' : guild_id,
-        'members' : [],
+        'members' : users,
+        'use_time' : true,
+        'page_num' : 1
     })
     const findGuild = await Guild.find({guild_id: parseInt(guild_id)})
     if (findGuild.length != 0) return

@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
-
-
+const {getEmbed, getRow} = require('../commands/leaderboard')
+const Guild = require('../models/Guild')
 module.exports = {
 	name: 'interactionCreate',
 	async execute(client, interaction) {
@@ -16,8 +16,42 @@ module.exports = {
             }
         } else if (interaction.isButton()) {
             if (interaction.customId == 'update') {
-                fetch('https://still-caverns-77918.herokuapp.com/update-users')
-                .then(await interaction.reply({ content: '⚡️stats has been updated⚡️'}));
+                await fetch(
+                    'https://still-caverns-77918.herokuapp.com' +
+                    // 'http://localhost:3000' +
+                '/update-users',{
+                    method: 'put',
+                    headers: {
+                        'Accept': 'application/json, text/plain, */*',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        guild_id: interaction.guild.id,
+                        toggle_key: true
+                    })
+                })
+                .then( async () => {
+                    const guild = await Guild.find({guild_id: interaction.guild.id})
+                    const leaderboardEmbed = await getEmbed(guild[0].use_time, interaction.guild.id, 1)
+                    const leaderboardRow = getRow(guild[0].use_time, 1)
+                    await interaction.reply({ embeds: [leaderboardEmbed], components: [leaderboardRow]})
+                    }
+                )
+                // .then(interaction.reply({ content: '⚡️stats has been updated⚡️'}));
+            } else if (interaction.customId == 'toggle-key') {
+                const guild = await Guild.find({guild_id: interaction.guild.id})
+                guild[0].use_time = !guild[0].use_time
+                await guild[0].save()
+                const leaderboardEmbed = await getEmbed(guild[0].use_time, interaction.guild.id, 1)
+                const leaderboardRow = getRow(guild[0].use_time, 1)
+                await interaction.reply({ embeds: [leaderboardEmbed], components: [leaderboardRow]})
+            } else if (interaction.customId == 'change-page') {
+                const guild = await Guild.find({guild_id: interaction.guild.id})
+                guild[0].page_num = 3 - guild[0].page_num
+                await guild[0].save()
+                const leaderboardEmbed = await getEmbed(guild[0].use_time, interaction.guild.id, guild[0].page_num)
+                const leaderboardRow = getRow(guild[0].use_time, guild[0].page_num)
+                await interaction.reply({ embeds: [leaderboardEmbed], components: [leaderboardRow]})
             }
         }
 	}

@@ -12,6 +12,7 @@ var url = process.env.MONGODB_CONNECT
 mongoose
     .connect(url, {useNewUrlParser : true, useUnifiedTopology : true})
     .then(() => {
+        
         app.use(express.json());
         
         app.use('/', routes);

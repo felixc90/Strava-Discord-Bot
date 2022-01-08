@@ -19,6 +19,6 @@ module.exports = {
                 guild_id: interaction.guild.id,
             })
         })
-        await interaction.reply({content : 'lol'})
+        await interaction.reply({content : '⚡️Stats have been updated!⚡️'})
         }
 };
