@@ -9,6 +9,7 @@ var schema = mongoose.Schema({
     'profile' : String,
     'guilds' : [Number],
     'most_recent_run' : Number,
+    'routes' : [String],
     'statistics' : [
         {
             'week_starting' : Date,

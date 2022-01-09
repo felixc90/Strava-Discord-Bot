@@ -69,7 +69,8 @@ function getRow(useTime, pageNum) {
 async function getLeaderboard(useTime, guildId, pageNum) {
     medals = ['\u200b\n🥇','🥈','🥉', '4th', '5th','6th','7th','8th','9th','10th']
     const guild = await Guild.find({guild_id: guildId})
-    const users = await User.find({discord_id : { $in: guild[0].members } })
+    const users = await User.find({discord_id : { $in: guild[0].members } }, 'name username statistics')
+    console.log(users)
     if (users.length == 0) return {name: '👻', value: 'No records to show...', inline: false}
     users.sort((user1, user2) =>  useTime ? 
         user2.statistics[0].total_time - user1.statistics[0].total_time:

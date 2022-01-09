@@ -2,7 +2,6 @@ const fetch = require('node-fetch');
 const dotenv = require('dotenv');
 const User  = require('./models/User');
 const Guild  = require('./models/Guild');
-const Route  = require('./models/Route');
 
 dotenv.config()
 
@@ -33,18 +32,14 @@ function authoriseUser(discord_data, code) {
                     'profile' : data.athlete.profile,
                     'guilds' : [discord_data.guild_id],
                     'statistics' : [],
+                    'routes' : [],
                     'most_recent_run' : -1
-            })
-            const route = new Route({
-                'owner' : data.athlete.id,
-                'polylines' : []
             })
             const findGuild = await Guild.find({guild_id : discord_data.guild_id})
             let guild = findGuild[0]
             guild.members.push(user.discord_id)
             await guild.save()
             await user.save()
-            await route.save()
             console.log('Done!')
             }
         )
@@ -76,6 +71,32 @@ function getActivities(res, user) {
         .then(async (data) => 
         {   
             await updateWeeks(user)
+            let week = getMonday(new Date())
+            let week_counter = 0
+            for (let run = 0; run < data.length; run++) {
+                // console.log('1')
+                if (user.most_recent_run == data[run].id) break
+                // console.log('2')
+                if (user.most_recent_run == -1 && 
+                    (getMonday(data[run].start_date) - week != 0)) break
+                // console.log('3')
+                if (data[run].type != "Run") continue
+                while (getMonday(data[run].start_date) - week != 0) {
+                    console.log(getMonday(data[run].start_date), week)
+                    let prev_week = new Date(week)
+                    prev_week.setDate(prev_week.getDate() - 7)
+                    week = prev_week
+                    week_counter++
+                }
+                user.statistics[week_counter].total_distance += data[run].distance / 1000
+                user.statistics[week_counter].total_time += data[run].moving_time / 60
+                if (data[run].map.summary_polyline != null) {
+                    user.routes.push(data[run].map.summary_polyline)
+                }
+            }
+            if (data.length != 0) user.most_recent_run = data[0].id
+            console.log(user)
+            await user.save()
         })
 }
 

@@ -1,7 +1,6 @@
 const express = require('express')
 const { authoriseUser, reAuthorize, addGuild } = require('./strava_api')
 const User = require('./models/User');
-const Route = require('./models/Route');
 const Guild = require('./models/Guild');
 const router  = express.Router(); 
 
@@ -23,14 +22,14 @@ router.post('/add-guild', (req, res) => {
 });
 
 router.get('/users', async (req, res) => {
-    const users = await User.find({}, 'id name refresh_token username profile weekly_stats')
+    const users = await User.find({}, 'discord_id strava_id name username refresh_token profile')
     res.send({listUsers: users});
 });
 
-router.get('/routes', async (req, res) => {
-    const routes = await Route.find()
-    res.send({'routes' : routes});
-});
+// router.get('/routes', async (req, res) => {
+//     const routes = await Route.find()
+//     res.send({'routes' : routes});
+// });
 
 router.put('/update-users', async (req, res) => {
     console.log('Updating leaderboard...')
@@ -46,7 +45,7 @@ router.put('/update-users', async (req, res) => {
 
 router.get('/clear', async (req, res) => {
     await User.deleteMany()
-    await Route.deleteMany()
+    await Guild.deleteMany()
     res.send({message: "Cleared database!"});
 });
 
