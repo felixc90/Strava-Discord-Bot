@@ -1,7 +1,6 @@
 const fetch = require('node-fetch');
 const dotenv = require('dotenv');
 const User  = require('./models/User');
-const Time  = require('./models/Time');
 const Guild  = require('./models/Guild');
 const Route  = require('./models/Route');
 
@@ -33,11 +32,8 @@ function authoriseUser(discord_data, code) {
                     'username' : discord_data.username,
                     'profile' : data.athlete.profile,
                     'guilds' : [discord_data.guild_id],
-                    'weekly_stats' : {
-                        'total_distance' : 0,
-                        'total_time' : 0,
-                        'most_recent_recorded_id' : -1,
-                    }
+                    'statistics' : [],
+                    'most_recent_run' : -1
             })
             const route = new Route({
                 'owner' : data.athlete.id,
@@ -79,58 +75,7 @@ function getActivities(res, user) {
         .then((res) => res.json())
         .then(async (data) => 
         {   
-            // computing the date reference for start of week
-            const times = await Time.find()
-            let time = new Time({
-                'week' : -1
-            }) 
-            if (times.length == 0) {
-                await time.save()
-            } else {
-                time = times[0]
-            }
-
-            const date = new Date()
-            date.setDate(date.getDate() - date.getDay() + 1)
-            const start_of_week = new Date(date.toDateString())
-            // If new week, reset all statistics
-            if (start_of_week != time.week) {
-                user.weekly_stats = {
-                    'total_distance' : 0,
-                    'total_time' : 0,
-                    'most_recent_recorded_id' : -1,
-                }
-                time.week = start_of_week
-                await user.save()
-                await time.save()
-            }
-            console.log(`Computing statistics for week starting ${time.week}`)
-            for (let run = 0; run < data.length; run++) {
-                const date_of_run = new Date(data[run].start_date_local)
-                // Do not update user stats if run is in a previous week or
-                // if we have reached a previously updated run
-                if (date_of_run < start_of_week || parseInt(data[run].id) ===
-                    user.weekly_stats.most_recent_recorded_id) {
-                    break;
-                }
-                if (run === 0) {
-                    user.weekly_stats.most_recent_recorded_id = data[run].id
-                }
-                if (data[run].type != "Run") {
-                    continue;
-                }
-                user.weekly_stats.total_distance += data[run].distance / 1000
-                user.weekly_stats.total_time += data[run].moving_time / 60
-                const routes = await Route.find({owner: user.strava_id})
-                if (!routes[0].polylines.includes(data[run].map.summary_polyline)
-                && data[run].map.summary_polyline != null) {
-                    const route = routes[0]
-                    route.polylines.push(data[run].map.summary_polyline)
-                    await route.save()
-                }
-            }
-            console.log(user.name, user.weekly_stats)
-            await user.save()
+            await updateWeeks(user)
         })
 }
 
@@ -156,3 +101,90 @@ module.exports = {
     reAuthorize: reAuthorize,
     addGuild: addGuild
 };
+
+// // computing the date reference for start of week
+// const times = await Time.find()
+// let time = new Time({
+//     'week' : -1
+// }) 
+// if (times.length == 0) {
+//     await time.save()
+// } else {
+//     time = times[0]
+// }
+
+// const date = new Date()
+// date.setDate(date.getDate() - date.getDay() + 1)
+// const start_of_week = new Date(date.toDateString())
+// // If new week, reset all statistics
+// if (start_of_week != time.week) {
+//     user.weekly_stats = {
+//         'total_distance' : 0,
+//         'total_time' : 0,
+//         'most_recent_recorded_id' : -1,
+//     }
+//     time.week = start_of_week
+//     await user.save()
+//     await time.save()
+// }
+// console.log(`Computing statistics for week starting ${time.week}`)
+// for (let run = 0; run < data.length; run++) {
+//     const date_of_run = new Date(data[run].start_date_local)
+//     // Do not update user stats if run is in a previous week or
+//     // if we have reached a previously updated run
+//     if (date_of_run < start_of_week || parseInt(data[run].id) ===
+//         user.weekly_stats.most_recent_recorded_id) {
+//         break;
+//     }
+//     if (run === 0) {
+//         user.weekly_stats.most_recent_recorded_id = data[run].id
+//     }
+//     if (data[run].type != "Run") {
+//         continue;
+//     }
+//     user.weekly_stats.total_distance += data[run].distance / 1000
+//     user.weekly_stats.total_time += data[run].moving_time / 60
+//     const routes = await Route.find({owner: user.strava_id})
+//     if (!routes[0].polylines.includes(data[run].map.summary_polyline)
+//     && data[run].map.summary_polyline != null) {
+//         const route = routes[0]
+//         route.polylines.push(data[run].map.summary_polyline)
+//         await route.save()
+//     }
+// }
+// console.log(user.name, user.weekly_stats)
+// await user.save()
+
+async function updateWeeks(user) {
+    if (user.most_recent_run == -1) {
+        user.statistics.push({
+            'week_starting' : getMonday(new Date()),
+            'total_distance' : 0,
+            'total_time' : 0,
+        })
+    } else {
+        const curr_week = getMonday(new Date())
+        let week = user.statistics[0].week_starting;
+        while (curr_week - week != 0) {
+            let next_week = new Date(week)
+            next_week.setDate(next_week.getDate() + 7)
+            week = next_week
+            let week_data = {
+                'week_starting' : week,
+                'total_distance' : 0,
+                'total_time' : 0,
+            }
+            await user.statistics.unshift(week_data)
+        }
+        await user.save()
+    }
+
+}
+
+function getMonday(d) {
+    d = new Date(d);
+    d.setUTCHours(0,0,0,0)
+    var day = d.getDay(),
+        diff = d.getDate() - day + (day == 0 ? -6:1); // adjust when day is sunday
+    return new Date(d.setDate(diff));
+  }

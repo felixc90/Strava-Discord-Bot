@@ -72,8 +72,8 @@ async function getLeaderboard(useTime, guildId, pageNum) {
     const users = await User.find({discord_id : { $in: guild[0].members } })
     if (users.length == 0) return {name: '👻', value: 'No records to show...', inline: false}
     users.sort((user1, user2) =>  useTime ? 
-        user2.weekly_stats.total_time - user1.weekly_stats.total_time:
-        user2.weekly_stats.total_distance - user1.weekly_stats.total_distance
+        user2.statistics[0].total_time - user1.statistics[0].total_time:
+        user2.statistics[0].total_distance - user1.statistics[0].total_distance
     )
     const start = pageNum == 1 ? 0 : 5
     const end = pageNum == 1 ? 5 : 10
@@ -83,8 +83,8 @@ async function getLeaderboard(useTime, guildId, pageNum) {
         name: `${medals[users.indexOf(user)]}`,
         value: `${
             useTime ? 
-                parseInt(user.weekly_stats.total_time) + 'min' :
-                Math.round(parseInt(user.weekly_stats.total_distance)*100)/100.0 + 'km'} | ${
+                parseInt(user.statistics[0].total_time) + 'min' :
+                Math.round(parseInt(user.statistics[0].total_distance)*100)/100.0 + 'km'} | ${
             user.name + (user.username === null ? '' : ` (${user.username})`)
         }`,
         inline: false,

@@ -1,7 +1,6 @@
 const express = require('express')
 const { authoriseUser, reAuthorize, addGuild } = require('./strava_api')
 const User = require('./models/User');
-const Time = require('./models/Time');
 const Route = require('./models/Route');
 const Guild = require('./models/Guild');
 const router  = express.Router(); 
@@ -48,7 +47,6 @@ router.put('/update-users', async (req, res) => {
 router.get('/clear', async (req, res) => {
     await User.deleteMany()
     await Route.deleteMany()
-    await Time.deleteMany()
     res.send({message: "Cleared database!"});
 });
 

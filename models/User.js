@@ -8,10 +8,13 @@ var schema = mongoose.Schema({
     'username' : String,
     'profile' : String,
     'guilds' : [Number],
-    'weekly_stats' : {
-        'total_distance' : Number,
-        'total_time' : Number,
-        'most_recent_recorded_id' : Number,
-    }
+    'most_recent_run' : Number,
+    'statistics' : [
+        {
+            'week_starting' : Date,
+            'total_distance' : Number,
+            'total_time' : Number,
+        }
+    ]
 })
 module.exports = mongoose.model("User", schema)
