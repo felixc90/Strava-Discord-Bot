@@ -15,6 +15,10 @@ var schema = mongoose.Schema({
             'week_starting' : Date,
             'total_distance' : Number,
             'total_time' : Number,
+            'statistics_by_day' : [{
+                'total_distance' : Number,
+                'total_time' : Number,
+            }]
         }
     ]
 })
