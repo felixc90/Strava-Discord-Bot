@@ -27,7 +27,17 @@ module.exports = {
 
 async function getGraph(interaction) {
     const chartCallback = (ChartJS) => {}
-    let data = await getData(interaction.user.id, interaction.options._subcommand)
+    let user = await User.findOne({discord_id : parseInt(interaction.user.id)}, 'statistics days_last_active')
+    let subcommand = interaction.options._subcommand
+    let num = subcommand == 'day' ? user.days_last_active : user.statistics.length + 1
+    var user1
+    if (interaction.options._hoistedOptions.length != 0) {
+        user1 = await User.findOne({discord_id : parseInt(interaction.options._hoistedOptions[0].user.id)}, 'statistics days_last_active')
+        if (user1.days_last_active > user.days_last_active && subcommand == 'day') num = user1.days_last_active
+        if (user1.statistics.length > user.statistics.length) num = user1.statistics.length + 1
+    } 
+
+    let data = await getData(user.statistics, interaction.options._subcommand, num)
     const width = 1200
     const height = 800
     const canvas = new ChartJSNodeCanvas({
@@ -133,21 +143,13 @@ async function getGraph(interaction) {
         }
     }
     if (interaction.options._hoistedOptions.length != 0) {
-        let data1 = await getData(interaction.options._hoistedOptions[0].user.id, interaction.options._subcommand)
+        let data1 = await getData(user1.statistics,
+            interaction.options._subcommand, num)
         let dates1 = data1[0]
         let distances1 = data1[1]
         if (dates1.length > dates.length) {
             config.data.labels = dates1.reverse()
-            for (let i = 0; i < dates1.length - dates.length; i++) {
-                distances.push(0)
-            }
-            config.data.datasets[0].data = distances.reverse()
-        } else {
-            for (let i = 0; i < dates.length - dates1.length; i++) {
-                distances1.push(0)
-            }
         }
-
 
         config.data.datasets.push({
             label: interaction.options._hoistedOptions[0].user.username,
@@ -176,20 +178,19 @@ async function getGraph(interaction) {
 }
 
 
-async function getData(id, subcommand, ) {
-    const statistics = await User.findOne({discord_id : parseInt(id)}, 'statistics')
+async function getData(statistics, subcommand, num) {
+    console.log(num)
     let distances = []
     let dates = []
-    const max_inactive_days = 7
     let num_days = 0
-    
+    let last_date = new Date()
     let data_found = false
-    let last_date
-    for (let num_week = 0; num_week < statistics.statistics.length; num_week++) {
-        const week = statistics.statistics[num_week]
+    for (let num_week = 0; num_week < statistics.length; num_week++) {
+        const week = statistics[num_week]
         if (subcommand == 'day') {
             for (let num_day = 6; num_day > -1; num_day--) {
                 var d = new Date();
+                // If day is in the future
                 if (num_week == 0 && num_day > (d.getDay() + 6) % 7) {
                     continue
                 }
@@ -199,12 +200,8 @@ async function getData(id, subcommand, ) {
                 dates.push(new_date.getDate() + '/' + 
                 (new_date.getMonth() + 1))
                 distances.push(day.total_distance)
-                if (inactive_days == max_inactive_days) {
-                    console.log(distances)
-                    distances = distances.slice(0, distances.length - max_inactive_days + 1);
-                    dates = dates.slice(0, dates.length - max_inactive_days + 1);
+                if (num_days == num) {
                     data_found = true
-                    console.log(distances)
                     break
                 }
                 num_days ++
@@ -218,16 +215,10 @@ async function getData(id, subcommand, ) {
             last_date = new_date
         }
     }
-    if (!data_found) {
+    while (distances.length < num) {
         distances.push(0)
-        if (subcommand == 'day') {
-            last_date.setDate(last_date.getDate() - 1)
-        } else {
-            last_date.setDate(last_date.getDate() - 1)
-        }
+        last_date.setDate(last_date.getDate() - 1)
         dates.push(last_date.getDate() + '/' + (last_date.getMonth() + 1))
-        console.log(last_date)
-        // dates.push()
     }
     return [dates, distances]
 }

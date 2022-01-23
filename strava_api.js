@@ -2,7 +2,6 @@ const fetch = require('node-fetch');
 const dotenv = require('dotenv');
 const User  = require('./models/User');
 const Guild  = require('./models/Guild');
-const { use } = require('express/lib/application');
 
 dotenv.config()
 
@@ -25,24 +24,24 @@ function authoriseUser(discord_data, code) {
         .then(async data => {
             console.log('Adding new user...')
             const user = new User({
-                    'strava_id' : data.athlete.id,
-                    'discord_id' : discord_data.user_id,
-                    'refresh_token' : data.refresh_token,
-                    'name' : `${data.athlete.firstname} ${data.athlete.lastname}`,
-                    'username' : discord_data.username,
-                    'profile' : data.athlete.profile,
-                    'guilds' : [discord_data.guild_id],
-                    'statistics' : [{
-                        'week_starting' : getMonday(new Date()),
-                        'total_distance' : 0,
-                        'total_time' : 0,
-                        'statistics_by_day' : Array(7).fill({
-                            'total_distance' : 0, 
-                            'total_time' : 0}),
-                    }],
-                    'days_last_active' : -1,
-                    'routes' : [],
-                    'most_recent_run' : -1
+                'strava_id' : data.athlete.id,
+                'discord_id' : discord_data.user_id,
+                'refresh_token' : data.refresh_token,
+                'name' : `${data.athlete.firstname} ${data.athlete.lastname}`,
+                'username' : discord_data.username,
+                'profile' : data.athlete.profile,
+                'guilds' : [discord_data.guild_id],
+                'statistics' : [{
+                    'week_starting' : getMonday(new Date()),
+                    'total_distance' : 0,
+                    'total_time' : 0,
+                    'statistics_by_day' : Array(7).fill({
+                        'total_distance' : 0, 
+                        'total_time' : 0}),
+                }],
+                'days_last_active' : -1,
+                'routes' : [],
+                'most_recent_run' : -1
             })
             const findGuild = await Guild.find({guild_id : discord_data.guild_id})
             let guild = findGuild[0]
@@ -98,42 +97,29 @@ function getActivities(res, user) {
                 const moving_time = data[run].moving_time / 60
                 const tmp_date = new Date(data[run].start_date)
                 const day = (tmp_date.getDay() + 6) % 7
-                user.statistics[week_counter].total_distance += distance
-                user.statistics[week_counter].total_time += moving_time
-                user.statistics[week_counter].statistics_by_day[day].total_distance += distance
-                user.statistics[week_counter].statistics_by_day[day].total_time += moving_time
+
+                const statistics_week = {
+                    total_distance : user.statistics[week_counter].total_distance + distance,
+                    total_time : user.statistics[week_counter].total_time + moving_time,
+                    week_starting : user.statistics[week_counter].week_starting,
+                    statistics_by_day: user.statistics[week_counter].statistics_by_day
+                }
+                statistics_week.statistics_by_day[day].total_distance += distance
+                statistics_week.statistics_by_day[day].total_time += moving_time
+
+                user.statistics.set(week_counter, statistics_week)
+
                 if (data[run].map.summary_polyline != null) {
                     user.routes.push(data[run].map.summary_polyline)
                 }
             }
+            console.log(user.name)
             if (data.length != 0) user.most_recent_run = data[0].id
-            let days_last_active = 0 
-            let inactive_days = 0
-            let inactive = false
-            for (let i = 0; i < user.statistics.length; i++) {
-                console.log(i)
-                week = user.statistics[i]
-                for (let num_day = 6; num_day > -1; num_day--) {
-                    days_last_active++;
-                    console.log(week.statistics_by_day[num_day])
-                    if (week.statistics_by_day[num_day].total_distance == 0) {
-                        inactive_days++
-                    } else {
-                        inactive_days = 0
-                    }
-                    if (inactive_days == 7) {
-                        inactive = true
-                        break
-                    }
-                }
-                if (inactive) {
-                    user.days_last_active = days_last_active - 6
-                    break
-                } 
-            }
-            if (!inactive) {
-                user.days_last_active = days_last_active + 1 - inactive_days
-            }
+            user.days_last_active = updateActiveDays(user)
+            // for (let i = 0; i < user.statistics.length; i++) {
+            //     console.log(user.statistics[i].week_starting, user.statistics[i].total_distance)
+            // }
+            console.log(user.days_last_active)
             await user.save() 
         })
 }
@@ -189,3 +175,24 @@ function getMonday(d) {
         diff = d.getDate() - day + (day == 0 ? -6:1); // adjust when day is sunday
     return new Date(d.setDate(diff));
   }
+
+
+function updateActiveDays(user) {
+    let days_last_active = 0 
+    let inactive_days = 0
+    for (let i = 0; i < user.statistics.length; i++) {
+        let week = user.statistics[i]
+        for (let num_day = 6; num_day > -1; num_day--) {
+            days_last_active++;
+            if (week.statistics_by_day[num_day].total_distance == 0) {
+                inactive_days++
+            } else {
+                inactive_days = 0
+            }
+            if (inactive_days == 7) {
+                return days_last_active - 7
+            }
+        }
+    }
+    return days_last_active - inactive_days
+}
