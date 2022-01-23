@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { ChartJSNodeCanvas } = require('chartjs-node-canvas');
 const { MessageAttachment, MessageEmbed } = require('discord.js');
+const {registerFont} = require("canvas")
 const User = require('../models/User')
 
 module.exports = {
@@ -9,35 +10,28 @@ module.exports = {
 		.setDescription('Displays a graph')
         .addSubcommand(subcommand =>
             subcommand
-                .setName('day')
+                .setName('by day')
                 .setDescription('Runs by day!'))
         .addSubcommand(subcommand =>
             subcommand
-                .setName('week')
+                .setName('by week')
                 .setDescription('Runs by week!')),
         async execute(interaction) {
         const chartCallback = (ChartJS) => {}
-        const plugin = {
-            id: 'custom_canvas_background_color',
-            beforeDraw: (chart) => {
-              const ctx = chart.canvas.getContext('2d');
-              ctx.save();
-              ctx.globalCompositeOperation = 'destination-over';
-              ctx.fillStyle = '#687296';
-              ctx.fillRect(0, 0, chart.width, chart.height);
-              ctx.restore();
-            }
-          };
         const data = await getData(interaction)
         const width = 1200
         const height = 800
         const canvas = new ChartJSNodeCanvas({
             width,
             height,
-            chartCallback
-        })
-        let distances = data[0]
-        let dates = data[1]
+            chartCallback,
+            backgroundColour: '#222732'
+        }, )
+        registerFont("./CourierPrime-Regular.ttf", { family: "Courier" })
+        let distances = data[1]
+        let dates = data[0]
+        // let times = data[2]
+        let byDay = interaction.options._subcommand == 'day'
         const config = {
             type: 'line',
             data: {
@@ -45,14 +39,31 @@ module.exports = {
                 datasets: [
                     {
                         data: distances.reverse(),
-                        backgroundColor: '#7289d9',
+                        backgroundColor: function (context) {
+                            const gradient = context.chart.ctx.createLinearGradient(600, 0, 600, 800);
+                            if (byDay) {
+                                gradient.addColorStop(0, 'rgba(0, 231, 255, 0.9)')
+                                gradient.addColorStop(0.5, 'rgba(0, 231, 255, 0.25)');
+                                gradient.addColorStop(1, 'rgba(0, 231, 255, 0)');
+                            } else {
+                                gradient.addColorStop(0, 'rgba(255, 0,0, 0.5)')
+                                gradient.addColorStop(0.5, 'rgba(255, 0, 0, 0.25)');
+                                gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+                            }
+                            return gradient;
+                        },
+                        borderWidth: 1,
+                        pointBackgroundColor: 'white',
+                        pointBorderColor: 'white',
+                        borderColor: byDay ? '#05CBE1' : '#FC2525',
                         fill: true,
                         cubicInterpolationMode: 'monotone',
-                        tension: 0.2
-                    }
-                ]
+                        tension: 0.2,
+                        yAxisID: 'y',
+                    },
+                ],
+                
             },
-            plugins: [plugin],
             options: {
                 layout: {
                     padding: {
@@ -63,7 +74,7 @@ module.exports = {
                     }
                 },
                 plugins : {
-                    legend: {						
+                    legend: {                        
                         display:false,
                     },
                     title: {
@@ -71,7 +82,7 @@ module.exports = {
                         text: `${interaction.user.username}'s Mileage (Last ${dates.length} ${interaction.options._subcommand}s)`,
                         font: {
                             size: 30,
-                            family: "'Cambria', 'Georgia'"
+                            family: 'Courier'
                         },
                         padding: {
                             top: 15,
@@ -89,17 +100,33 @@ module.exports = {
                             },
                             color: 'white',
                             font: {
-                                family: "'Cambria', 'Georgia'",
+                                family: 'Courier',
                                 size: 20,
                                 weight: '500',
                             }
-                        }
+                        },
+                        position: 'left'
+                    },
+                    y1: {
+                        ticks: {
+                            // Include a dollar sign in the ticks
+                            callback: function(value, index, ticks) {
+                                return value + 'min';
+                            },
+                            color: 'white',
+                            font: {
+                                family: 'Courier',
+                                size: 20,
+                                weight: '500',
+                            }
+                        },
+                        position: 'right'
                     },
                     x: {
                         ticks: {
                             color: 'white',
                             font: {
-                                family: "'Cambria', 'Georgia'",
+                                family: 'Courier',
                                 size: 20,
                                 weight: '500',
                             }
@@ -115,12 +142,14 @@ module.exports = {
         }
 };
 
+
 async function getData(interaction) {
     const statistics = await User.findOne({discord_id : parseInt(
         interaction.user.id
     )}, 'statistics')
     let distances = []
     let dates = []
+    let times = []
     const max_inactive_days = 7
     let num_days = 0
     let inactive_days = 0
@@ -133,14 +162,15 @@ async function getData(interaction) {
                 if (num_week == 0 && num_day > (d.getDay() + 6) % 7) {
                     continue
                 }
-                console.log(week.statistics_by_day.length, num_week, num_day)
+                // console.log(week.statistics_by_day.length, num_week, num_day)
                 const day = week.statistics_by_day[num_day]
-                console.log(num_day, day)
+                // console.log(num_day, day)
                 const new_date = new Date(week.week_starting)
                 new_date.setDate(new_date.getDate() + num_day)
                 dates.push(new_date.getDate() + '/' + 
                 (new_date.getMonth() + 1))
                 distances.push(day.total_distance)
+                times.push(parseInt(day.total_time))
                 if (day.total_distance == 0) {
                     // console.log(dates[dates.length - 1])
                     inactive_days++
@@ -149,6 +179,7 @@ async function getData(interaction) {
                 }
                 if (inactive_days == max_inactive_days) {
                     distances = distances.slice(0, distances.length - max_inactive_days + 1);
+                    times = times.slice(0, times.length - max_inactive_days + 1);
                     dates = dates.slice(0, dates.length - max_inactive_days + 1);
                     data_found = true
                     break
@@ -164,7 +195,8 @@ async function getData(interaction) {
             const new_date = new Date(week.week_starting)
             dates.push(new_date.getDate() + '/' + (new_date.getMonth() + 1))
             distances.push(week.total_distance)
+            times.push(week.total_time)
         }
     }
-    return [distances, dates]
+    return [dates, distances, times]
 }

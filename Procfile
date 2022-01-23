@@ -1,1 +1,1 @@
-discord: node index.js
+client: node index.js
