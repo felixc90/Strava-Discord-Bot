@@ -18,7 +18,8 @@ var schema = mongoose.Schema({
             'statistics_by_day' : [{
                 'total_distance' : Number,
                 'total_time' : Number,
-            }]
+            }],
+            'days_last_active' : Number
         }
     ]
 })
