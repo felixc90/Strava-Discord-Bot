@@ -19,8 +19,9 @@ var schema = mongoose.Schema({
                 'total_distance' : Number,
                 'total_time' : Number,
             }],
-            'days_last_active' : Number
+            
         }
-    ]
+    ],
+    'days_last_active' : Number
 })
 module.exports = mongoose.model("User", schema)

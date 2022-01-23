@@ -182,7 +182,7 @@ async function getData(id, subcommand, ) {
     let dates = []
     const max_inactive_days = 7
     let num_days = 0
-    let inactive_days = 0
+    
     let data_found = false
     let last_date
     for (let num_week = 0; num_week < statistics.statistics.length; num_week++) {
@@ -199,11 +199,6 @@ async function getData(id, subcommand, ) {
                 dates.push(new_date.getDate() + '/' + 
                 (new_date.getMonth() + 1))
                 distances.push(day.total_distance)
-                if (day.total_distance == 0) {
-                    inactive_days++
-                } else {
-                    inactive_days = 0
-                }
                 if (inactive_days == max_inactive_days) {
                     console.log(distances)
                     distances = distances.slice(0, distances.length - max_inactive_days + 1);

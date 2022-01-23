@@ -2,6 +2,7 @@ const fetch = require('node-fetch');
 const dotenv = require('dotenv');
 const User  = require('./models/User');
 const Guild  = require('./models/Guild');
+const { use } = require('express/lib/application');
 
 dotenv.config()
 
@@ -37,8 +38,9 @@ function authoriseUser(discord_data, code) {
                         'total_time' : 0,
                         'statistics_by_day' : Array(7).fill({
                             'total_distance' : 0, 
-                            'total_time' : 0})
+                            'total_time' : 0}),
                     }],
+                    'days_last_active' : -1,
                     'routes' : [],
                     'most_recent_run' : -1
             })
@@ -105,6 +107,33 @@ function getActivities(res, user) {
                 }
             }
             if (data.length != 0) user.most_recent_run = data[0].id
+            let days_last_active = 0 
+            let inactive_days = 0
+            let inactive = false
+            for (let i = 0; i < user.statistics.length; i++) {
+                console.log(i)
+                week = user.statistics[i]
+                for (let num_day = 6; num_day > -1; num_day--) {
+                    days_last_active++;
+                    console.log(week.statistics_by_day[num_day])
+                    if (week.statistics_by_day[num_day].total_distance == 0) {
+                        inactive_days++
+                    } else {
+                        inactive_days = 0
+                    }
+                    if (inactive_days == 7) {
+                        inactive = true
+                        break
+                    }
+                }
+                if (inactive) {
+                    user.days_last_active = days_last_active - 6
+                    break
+                } 
+            }
+            if (!inactive) {
+                user.days_last_active = days_last_active + 1 - inactive_days
+            }
             await user.save() 
         })
 }
