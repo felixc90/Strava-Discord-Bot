@@ -22,7 +22,8 @@ function authoriseUser(discord_data, code) {
         })
     }).then(res => res.json())
         .then(async data => {
-            console.log('Adding new user...')
+            console.log('Adding new user...bruh')
+            console.log(data)
             const user = new User({
                 'strava_id' : data.athlete.id,
                 'discord_id' : discord_data.user_id,
@@ -39,12 +40,19 @@ function authoriseUser(discord_data, code) {
                         'total_distance' : 0, 
                         'total_time' : 0}),
                 }],
+                'created_at' : data.athlete.created_at,
+                'joined_at' : new Date(),
+                'sex' : data.athlete.sex,
+                'region' : data.athlete.city + data.athlete.state + data.athlete.country,
                 'days_last_active' : -1,
                 'routes' : [],
                 'longest_run' : {
                     'date' : -1,
                     'time' : -1,
-                    'distance' : -1
+                    'distance' : -1,
+                    'name' : '',
+                    'start_latlng' : [],
+                    'end_latlng' : [],
                 },
                 'most_recent_run' : -1,
                 'total_distance' : 0,
@@ -89,7 +97,8 @@ function getActivities(res, user) {
             let week = getMonday(new Date())
             let week_counter = 0
             for (let run = 0; run < data.length; run++) {
-                // console.log(data[run].id, data[run].distance)
+                // console.log(data[run].id, data[run].start_date)
+                // continue
                 if (user.most_recent_run == data[run].id) break
                 if (user.most_recent_run == -1 && 
                     (getMonday(data[run].start_date) - week != 0)) break
@@ -115,13 +124,18 @@ function getActivities(res, user) {
                 statistics_week.statistics_by_day[day].total_time += moving_time
                 user.statistics.set(week_counter, statistics_week)
                 user.total_distance += distance
-                user.total_time += total_time
-                if (distance > user.longest_run.distance) {
+                user.total_time += moving_time
+                console.log(data[run].id, data[run].start_latlng, data[run].end_latlng)
+                if (distance >= user.longest_run.distance) {
                     user.longest_run = {
                         date: tmp_date,
                         time: moving_time,
-                        distance: distance
+                        distance: distance,
+                        name: data[run].name,
+                        start_latlng: Array.from(data[run].start_latlng),
+                        end_latlng: Array.from(data[run].end_latlng),
                     }
+                    console.log(user.longest_run)
                 }
 
                 if (data[run].map.summary_polyline != null) {
@@ -131,10 +145,6 @@ function getActivities(res, user) {
             console.log(user.name)
             if (data.length != 0) user.most_recent_run = data[0].id
             user.days_last_active = updateActiveDays(user)
-            // for (let i = 0; i < user.statistics.length; i++) {
-            //     console.log(user.statistics[i].week_starting, user.statistics[i].total_distance)
-            // }
-            console.log(user.days_last_active)
             await user.save() 
         })
 }

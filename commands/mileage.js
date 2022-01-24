@@ -254,7 +254,7 @@ async function getEmbed(interaction, values) {
         distances.filter((run)=> run != 0).length.toString(),
         parseInt(distances.reduce((a, b) => a + b, 0) / distances.length).toString(),
         distances.filter((run)=> run != 0).length == 0 ? '0' :(parseInt(distances.reduce((a, b) => a + b, 0)) / distances.filter((run)=> run != 0).length).toString(),
-        distances.reduce((a, b) => a + b, 0) == 0 ? '0' : (times.reduce((a, b) => a + b, 0) / distances.reduce((a, b) => a + b, 0)).toFixed(2).toString()]
+        toPace(distances.reduce((a, b) => a + b, 0) == 0 ? '0' : (times.reduce((a, b) => a + b, 0) / distances.reduce((a, b) => a + b, 0)).toFixed(2))]
     if (interaction.options._hoistedOptions.length == 0) {
         if (subcommand == 'day') {
             embed = new MessageEmbed()
@@ -276,7 +276,7 @@ async function getEmbed(interaction, values) {
         } else {
             let user = await User.findOne({discord_id : parseInt(interaction.user.id)}, 'statistics days_last_active')
             data[0] = ((user.statistics.map((week) => week.statistics_by_day.filter((day) => day.total_distance != 0).length)).reduce((a, b) => a + b, 0)).toString()
-            data[3] = distances.reduce((a, b) => a + b, 0).toFixed(2).toString()
+            data[2] = parseInt(distances.reduce((a, b) => a + b, 0)).toString()
             embed = new MessageEmbed()
             .setColor('#05CBE1')
             .setDescription(
@@ -288,9 +288,9 @@ async function getEmbed(interaction, values) {
             `+------------------------+-${'-'.repeat(column_width)}-+ \n`+
             `| Avg. Mileage (km)      | ${data[1]+' '.repeat(Math.abs(column_width - data[1].length))} |\n`+
             `+------------------------+-${'-'.repeat(column_width)}-+ \n`+
-            `| Avg. Pace (min/km)     | ${data[2]+' '.repeat(Math.abs(column_width - data[2].length))} |\n`+
+            `| Avg. Pace (min/km)     | ${data[3]+' '.repeat(Math.abs(column_width - data[3].length))} |\n`+
             `+------------------------+-${'-'.repeat(column_width)}-+ \n`+
-            `| Total Distance (km)    | ${data[3]+' '.repeat(Math.abs(column_width - data[3].length))} |\n`+
+            `| Total Distance (km)    | ${data[2]+' '.repeat(Math.abs(column_width - data[2].length))} |\n`+
             `+------------------------+-${'-'.repeat(column_width)}-+ \n`+
             '```')
     }
@@ -302,7 +302,7 @@ async function getEmbed(interaction, values) {
         data.push(distances1.filter((run)=> run != 0).length.toString()),
         data.push(parseInt(distances1.reduce((a, b) => a + b, 0) / distances1.length).toString()),
         data.push(distances1.filter((run)=> run != 0).length == 0 ? '0' :(parseInt(distances1.reduce((a, b) => a + b, 0)) / distances1.filter((run)=> run != 0).length).toString()),
-        data.push(distances1.reduce((a, b) => a + b, 0) == 0 ? '0' : (times1.reduce((a, b) => a + b, 0) / distances1.reduce((a, b) => a + b, 0)).toFixed(2).toString())
+        data.push(distances1.reduce((a, b) => a + b, 0) == 0 ? '0' : toPace((times1.reduce((a, b) => a + b, 0) / distances1.reduce((a, b) => a + b, 0)).toFixed(2)))
         if (subcommand == 'day') {
             embed = new MessageEmbed()
             .setColor('#FC2525')
@@ -325,8 +325,8 @@ async function getEmbed(interaction, values) {
             let user1 = await User.findOne({discord_id : parseInt(interaction.options._hoistedOptions[0].user.id)}, 'statistics days_last_active')
             data[0] = ((user.statistics.map((week) => week.statistics_by_day.filter((day) => day.total_distance != 0).length)).reduce((a, b) => a + b, 0)).toString()
             data[4] = ((user1.statistics.map((week) => week.statistics_by_day.filter((day) => day.total_distance != 0).length)).reduce((a, b) => a + b, 0)).toString()
-            data[3] = distances.reduce((a, b) => a + b, 0).toFixed(2).toString()
-            data[7] = distances1.reduce((a, b) => a + b, 0).toFixed(2).toString()
+            data[3] = parseInt(distances.reduce((a, b) => a + b, 0)).toString()
+            data[7] = parseInt(distances1.reduce((a, b) => a + b, 0)).toString()
             embed = new MessageEmbed()
             .setColor('#FC2525')
             .setDescription(
@@ -338,12 +338,16 @@ async function getEmbed(interaction, values) {
             `+------------------------+-${'-'.repeat(column_width)}-+-${'-'.repeat(column_width1)}-+ \n`+
             `| Avg. Mileage/Week (km) | ${data[1]+' '.repeat(Math.abs(column_width - data[1].length))} | ${data[5]+' '.repeat(Math.abs(column_width1 - data[5].length))} |\n`+
             `+------------------------+-${'-'.repeat(column_width)}-+-${'-'.repeat(column_width1)}-+ \n`+
-            `| Avg. Pace (min/km)     | ${data[2]+' '.repeat(Math.abs(column_width - data[2].length))} | ${data[6]+' '.repeat(Math.abs(column_width1 - data[6].length))} |\n`+
+            `| Avg. Pace (min/km)     | ${data[3]+' '.repeat(Math.abs(column_width - data[3].length))} | ${data[6]+' '.repeat(Math.abs(column_width1 - data[6].length))} |\n`+
             `+------------------------+-${'-'.repeat(column_width)}-+-${'-'.repeat(column_width1)}-+ \n`+
-            `| Total Distance (km)    | ${data[3]+' '.repeat(Math.abs(column_width - data[3].length))} | ${data[7]+' '.repeat(Math.abs(column_width1 - data[7].length))} |\n`+
+            `| Total Distance (km)    | ${data[2]+' '.repeat(Math.abs(column_width - data[2].length))} | ${data[7]+' '.repeat(Math.abs(column_width1 - data[7].length))} |\n`+
             `+------------------------+-${'-'.repeat(column_width)}-+-${'-'.repeat(column_width1)}-+ \n`+
             '```')
         }
     }
     return embed
+}
+
+function toPace(speed) {
+    return `${parseInt(speed)}:${parseInt((speed - parseInt(speed)) * 60)}`
 }
