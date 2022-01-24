@@ -19,27 +19,39 @@ module.exports = {
                 .setDescription('Runs by week!')
                 .addUserOption(option => option.setName('user').setDescription('The user'))),
         async execute(interaction) {
-        const graph = await getGraph(interaction)
-        // await interaction.reply({ files: [attachment] });
-        await interaction.reply({files: [graph]})
+        const values = await getGraph(interaction)
+        // console.log(graph)
+        const graph = values[0]
+        if (typeof graph === 'string') {
+            const embed = new MessageEmbed()
+            .setColor('#05CBE1')
+            .setDescription('❗️**' + graph + '** is not registered❗️\n\n Use `/register` to add to the database. ✨')
+            await interaction.reply({embeds: [embed]});
+            return
         }
+        let embed = await getEmbed(interaction, values)
+        await interaction.reply({files: [graph], embeds : [embed]})
+    }
 };
 
 async function getGraph(interaction) {
     const chartCallback = (ChartJS) => {}
+    let return_data = []
     let user = await User.findOne({discord_id : parseInt(interaction.user.id)}, 'statistics days_last_active')
+    if (user == null) return interaction.user.username
     let subcommand = interaction.options._subcommand
     let num = subcommand == 'day' ? user.days_last_active : user.statistics.length + 1
     var user1
     if (interaction.options._hoistedOptions.length != 0) {
         user1 = await User.findOne({discord_id : parseInt(interaction.options._hoistedOptions[0].user.id)}, 'statistics days_last_active')
+        if (user1 == null) return interaction.options._hoistedOptions[0].user.username
         if (user1.days_last_active > user.days_last_active && subcommand == 'day') num = user1.days_last_active
         if (user1.statistics.length > user.statistics.length) num = user1.statistics.length + 1
     } 
 
     let data = await getData(user.statistics, interaction.options._subcommand, num)
-    const width = 1200
-    const height = 800
+    const width = 1400
+    const height = 900
     const canvas = new ChartJSNodeCanvas({
         width,
         height,
@@ -47,8 +59,11 @@ async function getGraph(interaction) {
         backgroundColour: '#222732'
     }, )
     registerFont("./CourierPrime-Regular.ttf", { family: "Courier" })
-    let distances = data[1]
     let dates = data[0]
+    let distances = data[1]
+    let times = data[2]
+    return_data.push(distances)
+    return_data.push(times)
     const config = {
         type: 'line',
         data: {
@@ -147,6 +162,9 @@ async function getGraph(interaction) {
             interaction.options._subcommand, num)
         let dates1 = data1[0]
         let distances1 = data1[1]
+        let times1 = data1[2]
+        return_data.push(distances1)
+        return_data.push(times1)
         if (dates1.length > dates.length) {
             config.data.labels = dates1.reverse()
         }
@@ -174,13 +192,14 @@ async function getGraph(interaction) {
     }
     const image = await canvas.renderToBuffer(config)
     const attachment = new MessageAttachment(image)
-    return attachment
+    return [attachment, return_data]
 }
 
 
 async function getData(statistics, subcommand, num) {
     console.log(num)
     let distances = []
+    let times = []
     let dates = []
     let num_days = 0
     let last_date = new Date()
@@ -200,11 +219,12 @@ async function getData(statistics, subcommand, num) {
                 dates.push(new_date.getDate() + '/' + 
                 (new_date.getMonth() + 1))
                 distances.push(day.total_distance)
+                times.push(day.total_time)
                 if (num_days == num) {
                     data_found = true
                     break
                 }
-                num_days ++
+                num_days++
                 last_date = new_date
             }
             if (data_found) break
@@ -212,6 +232,7 @@ async function getData(statistics, subcommand, num) {
             const new_date = new Date(week.week_starting)
             dates.push(new_date.getDate() + '/' + (new_date.getMonth() + 1))
             distances.push(week.total_distance)
+            times.push(week.total_time)
             last_date = new_date
         }
     }
@@ -220,6 +241,109 @@ async function getData(statistics, subcommand, num) {
         last_date.setDate(last_date.getDate() - 1)
         dates.push(last_date.getDate() + '/' + (last_date.getMonth() + 1))
     }
-    return [dates, distances]
+    return [dates, distances, times]
 }
 
+async function getEmbed(interaction, values) {
+    const distances = values[1][0]
+    const times = values[1][1]
+    const username = interaction.user.username
+    const subcommand = interaction.options._subcommand
+    let column_width = username.length > 5 ? username.length : 5
+    var data = [
+        distances.filter((run)=> run != 0).length.toString(),
+        parseInt(distances.reduce((a, b) => a + b, 0) / distances.length).toString(),
+        distances.filter((run)=> run != 0).length == 0 ? '0' :(parseInt(distances.reduce((a, b) => a + b, 0)) / distances.filter((run)=> run != 0).length).toString(),
+        distances.reduce((a, b) => a + b, 0) == 0 ? '0' : (times.reduce((a, b) => a + b, 0) / distances.reduce((a, b) => a + b, 0)).toFixed(2).toString()]
+    if (interaction.options._hoistedOptions.length == 0) {
+        if (subcommand == 'day') {
+            embed = new MessageEmbed()
+            .setColor('#05CBE1')
+            .setDescription(
+            '```'+
+            `+------------------------+-${'-'.repeat(column_width)}-+ \n`+
+            `|                        | ${username + ' '.repeat(Math.abs(column_width - username.length))} |\n`+
+            `+------------------------+-${'-'.repeat(column_width)}-+ \n`+
+            `| Num. of Runs           | ${data[0]+' '.repeat(Math.abs(column_width - data[0].length))} |\n`+
+            `+------------------------+-${'-'.repeat(column_width)}-+ \n`+
+            `| Daily Average (km)     | ${data[1]+' '.repeat(Math.abs(column_width - data[1].length))} |\n`+
+            `+------------------------+-${'-'.repeat(column_width)}-+ \n`+
+            `| Avg. Run Distance (km) | ${data[2]+' '.repeat(Math.abs(column_width - data[2].length))} |\n`+
+            `+------------------------+-${'-'.repeat(column_width)}-+ \n`+
+            `| Avg. Pace (min/km)     | ${data[3]+' '.repeat(Math.abs(column_width - data[3].length))} |\n`+
+            `+------------------------+-${'-'.repeat(column_width)}-+ \n`+
+            '```')
+        } else {
+            let user = await User.findOne({discord_id : parseInt(interaction.user.id)}, 'statistics days_last_active')
+            data[0] = ((user.statistics.map((week) => week.statistics_by_day.filter((day) => day.total_distance != 0).length)).reduce((a, b) => a + b, 0)).toString()
+            data[3] = distances.reduce((a, b) => a + b, 0).toFixed(2).toString()
+            embed = new MessageEmbed()
+            .setColor('#05CBE1')
+            .setDescription(
+            '```'+
+            `+------------------------+-${'-'.repeat(column_width)}-+ \n`+
+            `|                        | ${username + ' '.repeat(Math.abs(column_width - username.length))} |\n`+
+            `+------------------------+-${'-'.repeat(column_width)}-+ \n`+
+            `| Num. of Runs           | ${data[0]+' '.repeat(Math.abs(column_width - data[0].length))} |\n`+
+            `+------------------------+-${'-'.repeat(column_width)}-+ \n`+
+            `| Avg. Mileage (km)      | ${data[1]+' '.repeat(Math.abs(column_width - data[1].length))} |\n`+
+            `+------------------------+-${'-'.repeat(column_width)}-+ \n`+
+            `| Avg. Pace (min/km)     | ${data[2]+' '.repeat(Math.abs(column_width - data[2].length))} |\n`+
+            `+------------------------+-${'-'.repeat(column_width)}-+ \n`+
+            `| Total Distance (km)    | ${data[3]+' '.repeat(Math.abs(column_width - data[3].length))} |\n`+
+            `+------------------------+-${'-'.repeat(column_width)}-+ \n`+
+            '```')
+    }
+    } else{
+        const username1 = interaction.options._hoistedOptions[0].user.username
+        const distances1 = values[1][2]
+        const times1 = values[1][3]
+        let column_width1 = username1.length > 5 ? username1.length : 5
+        data.push(distances1.filter((run)=> run != 0).length.toString()),
+        data.push(parseInt(distances1.reduce((a, b) => a + b, 0) / distances1.length).toString()),
+        data.push(distances1.filter((run)=> run != 0).length == 0 ? '0' :(parseInt(distances1.reduce((a, b) => a + b, 0)) / distances1.filter((run)=> run != 0).length).toString()),
+        data.push(distances1.reduce((a, b) => a + b, 0) == 0 ? '0' : (times1.reduce((a, b) => a + b, 0) / distances1.reduce((a, b) => a + b, 0)).toFixed(2).toString())
+        if (subcommand == 'day') {
+            embed = new MessageEmbed()
+            .setColor('#FC2525')
+            .setDescription(
+            '```'+
+            `+------------------------+-${'-'.repeat(column_width)}-+-${'-'.repeat(column_width1)}-+ \n`+
+            `|                        | ${username + ' '.repeat(Math.abs(column_width - username.length))} | ${username1 + ' '.repeat(Math.abs(column_width1 - username1.length))} |\n`+
+            `+------------------------+-${'-'.repeat(column_width)}-+-${'-'.repeat(column_width1)}-+ \n`+
+            `| Num. of Runs           | ${data[0]+' '.repeat(Math.abs(column_width - data[0].length))} | ${data[4]+' '.repeat(Math.abs(column_width1 - data[4].length))} |\n`+
+            `+------------------------+-${'-'.repeat(column_width)}-+-${'-'.repeat(column_width1)}-+ \n`+
+            `| Daily Average (km)     | ${data[1]+' '.repeat(Math.abs(column_width - data[1].length))} | ${data[5]+' '.repeat(Math.abs(column_width1 - data[5].length))} |\n`+
+            `+------------------------+-${'-'.repeat(column_width)}-+-${'-'.repeat(column_width1)}-+ \n`+
+            `| Avg. Run Distance (km) | ${data[2]+' '.repeat(Math.abs(column_width - data[2].length))} | ${data[6]+' '.repeat(Math.abs(column_width1 - data[6].length))} |\n`+
+            `+------------------------+-${'-'.repeat(column_width)}-+-${'-'.repeat(column_width1)}-+ \n`+
+            `| Avg. Pace (min/km)     | ${data[3]+' '.repeat(Math.abs(column_width - data[3].length))} | ${data[7]+' '.repeat(Math.abs(column_width1 - data[7].length))} |\n`+
+            `+------------------------+-${'-'.repeat(column_width)}-+-${'-'.repeat(column_width1)}-+ \n`+
+            '```')
+        } else {
+            let user = await User.findOne({discord_id : parseInt(interaction.user.id)}, 'statistics days_last_active')
+            let user1 = await User.findOne({discord_id : parseInt(interaction.options._hoistedOptions[0].user.id)}, 'statistics days_last_active')
+            data[0] = ((user.statistics.map((week) => week.statistics_by_day.filter((day) => day.total_distance != 0).length)).reduce((a, b) => a + b, 0)).toString()
+            data[4] = ((user1.statistics.map((week) => week.statistics_by_day.filter((day) => day.total_distance != 0).length)).reduce((a, b) => a + b, 0)).toString()
+            data[3] = distances.reduce((a, b) => a + b, 0).toFixed(2).toString()
+            data[7] = distances1.reduce((a, b) => a + b, 0).toFixed(2).toString()
+            embed = new MessageEmbed()
+            .setColor('#FC2525')
+            .setDescription(
+            '```'+
+            `+------------------------+-${'-'.repeat(column_width)}-+-${'-'.repeat(column_width1)}-+ \n`+
+            `|                        | ${username + ' '.repeat(Math.abs(column_width - username.length))} | ${username1 + ' '.repeat(Math.abs(column_width1 - username1.length))} |\n`+
+            `+------------------------+-${'-'.repeat(column_width)}-+-${'-'.repeat(column_width1)}-+ \n`+
+            `| Num. of Runs           | ${data[0]+' '.repeat(Math.abs(column_width - data[0].length))} | ${data[4]+' '.repeat(Math.abs(column_width1 - data[4].length))} |\n`+
+            `+------------------------+-${'-'.repeat(column_width)}-+-${'-'.repeat(column_width1)}-+ \n`+
+            `| Avg. Mileage/Week (km) | ${data[1]+' '.repeat(Math.abs(column_width - data[1].length))} | ${data[5]+' '.repeat(Math.abs(column_width1 - data[5].length))} |\n`+
+            `+------------------------+-${'-'.repeat(column_width)}-+-${'-'.repeat(column_width1)}-+ \n`+
+            `| Avg. Pace (min/km)     | ${data[2]+' '.repeat(Math.abs(column_width - data[2].length))} | ${data[6]+' '.repeat(Math.abs(column_width1 - data[6].length))} |\n`+
+            `+------------------------+-${'-'.repeat(column_width)}-+-${'-'.repeat(column_width1)}-+ \n`+
+            `| Total Distance (km)    | ${data[3]+' '.repeat(Math.abs(column_width - data[3].length))} | ${data[7]+' '.repeat(Math.abs(column_width1 - data[7].length))} |\n`+
+            `+------------------------+-${'-'.repeat(column_width)}-+-${'-'.repeat(column_width1)}-+ \n`+
+            '```')
+        }
+    }
+    return embed
+}

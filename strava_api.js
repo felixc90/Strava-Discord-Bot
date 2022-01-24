@@ -41,7 +41,14 @@ function authoriseUser(discord_data, code) {
                 }],
                 'days_last_active' : -1,
                 'routes' : [],
-                'most_recent_run' : -1
+                'longest_run' : {
+                    'date' : -1,
+                    'time' : -1,
+                    'distance' : -1
+                },
+                'most_recent_run' : -1,
+                'total_distance' : 0,
+                'total_time' : 0
             })
             const findGuild = await Guild.find({guild_id : discord_data.guild_id})
             let guild = findGuild[0]
@@ -106,8 +113,16 @@ function getActivities(res, user) {
                 }
                 statistics_week.statistics_by_day[day].total_distance += distance
                 statistics_week.statistics_by_day[day].total_time += moving_time
-
                 user.statistics.set(week_counter, statistics_week)
+                user.total_distance += distance
+                user.total_time += total_time
+                if (distance > user.longest_run.distance) {
+                    user.longest_run = {
+                        date: tmp_date,
+                        time: moving_time,
+                        distance: distance
+                    }
+                }
 
                 if (data[run].map.summary_polyline != null) {
                     user.routes.push(data[run].map.summary_polyline)
@@ -183,6 +198,11 @@ function updateActiveDays(user) {
     for (let i = 0; i < user.statistics.length; i++) {
         let week = user.statistics[i]
         for (let num_day = 6; num_day > -1; num_day--) {
+            var d = new Date();
+            // If day is in the future
+            if (i == 0 && num_day > (d.getDay() + 6) % 7) {
+                continue
+            }
             days_last_active++;
             if (week.statistics_by_day[num_day].total_distance == 0) {
                 inactive_days++

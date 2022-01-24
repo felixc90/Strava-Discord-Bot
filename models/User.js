@@ -10,6 +10,13 @@ var schema = mongoose.Schema({
     'guilds' : [Number],
     'most_recent_run' : Number,
     'routes' : [String],
+    'total_distance' : Number,
+    'total_time' : Number,
+    'longest_run' : {
+        'date' : Date,
+        'time' : Number,
+        'distance' : Number
+    },
     'statistics' : [
         {
             'week_starting' : Date,

@@ -35,7 +35,7 @@ async function getEmbed(useTime, guildId, pageNum) {
     let leaderboard = await getLeaderboard(useTime, guildId, pageNum)
     const leaderboardEmbed = new MessageEmbed()
     // .setColor('#8c00ff')
-    .setColor('0x0099ff')
+    .setColor('#05CBE1')
     .setTitle(`Weekly Strava Leaderboard`)
     .setDescription(useTime ? '=======based on time========' : '======based on distance======')
     .setThumbnail('https://i.imgur.com/xJXLhW3.png')

@@ -15,7 +15,7 @@ module.exports = {
                 'value': 'Displays the weekly strava leaderboard based on time or distance.', 'inline': false},
                 {'name' : '⚡️ Update Leaderboard - `/update`', 'value': 'Force updates the weekly statistics.', 'inline': false},
                 {'name' : '💯 Register User - `/register`', 'value': 'Adds the user\'s statistics to the server.', 'inline': false},
-                {'name' : '👟 My Graphs - `/graph <time unit>`', 'value': 'Displays a graph of user\'s recent activity.', 'inline': false},
+                {'name' : '👟 My Graphs - `/graph <time unit> <name>`', 'value': 'Displays a graph of given users\' recent activity.', 'inline': false},
                 {'name' : '🔥 Heatmap - `/heatmap`', 'value': 'Generates a thermal map of runners in the server.', 'inline': false}
             )
         await interaction.reply({embeds : [helpEmbed]})
