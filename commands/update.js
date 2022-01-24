@@ -7,8 +7,8 @@ module.exports = {
 		.setDescription('Updates the weekly stats'),
         async execute(interaction) {
         fetch(
-            // 'https://still-caverns-77918.herokuapp.com' +
-            'http://localhost:3000' +
+            'https://still-caverns-77918.herokuapp.com' +
+            // 'http://localhost:3000' +
         '/update-users',{
             method: 'put',
             headers: {

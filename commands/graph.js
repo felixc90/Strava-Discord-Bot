@@ -6,17 +6,17 @@ const User = require('../models/User')
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('graph')
-		.setDescription('Displays a graph')
+		.setName('mileage')
+		.setDescription('Shows the mileage for user and others incl. graph and table')
         .addSubcommand(subcommand =>
             subcommand
                 .setName('day')
-                .setDescription('Runs by day!')
+                .setDescription('Statistics by day!')
                 .addUserOption(option => option.setName('user').setDescription('The user')))
         .addSubcommand(subcommand =>
             subcommand
                 .setName('week')
-                .setDescription('Runs by week!')
+                .setDescription('Statistics by week!')
                 .addUserOption(option => option.setName('user').setDescription('The user'))),
         async execute(interaction) {
         const values = await getGraph(interaction)
