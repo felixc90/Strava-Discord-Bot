@@ -38,13 +38,13 @@ async function getGraph(interaction) {
     const chartCallback = (ChartJS) => {}
     let return_data = []
     let user = await User.findOne({discord_id : parseInt(interaction.user.id)}, 'statistics days_last_active')
-    if (user == null) return interaction.user.username
+    if (user == null) return [interaction.user.username]
     let subcommand = interaction.options._subcommand
     let num = subcommand == 'day' ? user.days_last_active : user.statistics.length + 1
     var user1
     if (interaction.options._hoistedOptions.length != 0) {
         user1 = await User.findOne({discord_id : parseInt(interaction.options._hoistedOptions[0].user.id)}, 'statistics days_last_active')
-        if (user1 == null) return interaction.options._hoistedOptions[0].user.username
+        if (user1 == null) return [interaction.options._hoistedOptions[0].user.username]
         if (user1.days_last_active > user.days_last_active && subcommand == 'day') num = user1.days_last_active
         if (user1.statistics.length > user.statistics.length) num = user1.statistics.length + 1
     } 
