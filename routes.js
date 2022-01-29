@@ -26,10 +26,10 @@ router.get('/users', async (req, res) => {
     res.send({listUsers: users});
 });
 
-// router.get('/routes', async (req, res) => {
-//     const routes = await Route.find()
-//     res.send({'routes' : routes});
-// });
+router.get('/routes/:user_id', async (req, res) => {
+    const routes = await User.find({discord_id: parseInt(req.params.user_id)}, 'routes')
+    res.send({'routes' : routes});
+});
 
 router.put('/update-users', async (req, res) => {
     console.log('Updating leaderboard...')
