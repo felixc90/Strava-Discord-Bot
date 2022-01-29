@@ -23,12 +23,12 @@ router.post('/add-guild', (req, res) => {
 
 router.get('/users', async (req, res) => {
     const users = await User.find({}, 'discord_id strava_id name username refresh_token profile')
-    res.send({listUsers: users});
+    res.send({listUsers: users.routes});
 });
 
 router.get('/routes/:user_id', async (req, res) => {
-    const routes = await User.find({discord_id: parseInt(req.params.user_id)}, 'routes')
-    res.send({'routes' : routes});
+    const user = await User.findOne({discord_id: parseInt(req.params.user_id)}, 'routes')
+    res.send({'routes' : user.routes});
 });
 
 router.put('/update-users', async (req, res) => {

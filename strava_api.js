@@ -97,7 +97,7 @@ function getActivities(res, user) {
             let week = getMonday(new Date())
             let week_counter = 0
             for (let run = 0; run < data.length; run++) {
-                // console.log(data[run].id, data[run].start_date)
+                // console.log(data[run].id, data[run].map.summary_polyline)
                 // continue
                 if (user.most_recent_run == data[run].id) break
                 if (user.most_recent_run == -1 && 

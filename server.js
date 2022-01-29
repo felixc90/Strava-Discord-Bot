@@ -2,7 +2,7 @@ const express = require('express')
 const mongoose = require('mongoose')
 const dotenv = require('dotenv')
 const routes = require('./routes')
-
+const cors = require('cors')
 dotenv.config()
 
 var app = express();
@@ -12,9 +12,10 @@ var url = process.env.MONGODB_CONNECT
 mongoose
     .connect(url, {useNewUrlParser : true, useUnifiedTopology : true})
     .then(() => {
-        
         app.use(express.json());
-        
+        // app.use(cors({
+        //     origin: 'http://127.0.0.1:5500'
+        // }))
         app.use('/', routes);
 
         app.listen(process.env.PORT, () => {
