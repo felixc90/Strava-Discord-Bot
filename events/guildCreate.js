@@ -1,4 +1,7 @@
 const fetch = require('node-fetch');
+const dotenv = require('dotenv');
+
+dotenv.config()
 
 module.exports = {
 	name: 'guildCreate',
@@ -7,10 +10,7 @@ module.exports = {
 		console.log("Joined a new guild");
         const Guilds = client.guilds.cache.map(guild => guild.id);
         console.log(Guilds[Guilds.length - 1]);
-        fetch(
-            'https://still-caverns-77918.herokuapp.com/' +
-            // 'http://localhost:3000/' + 
-            'add-guild', {
+        fetch(`${process.env.URL}add-guild`, {
             method: 'post',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({

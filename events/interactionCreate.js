@@ -17,9 +17,7 @@ module.exports = {
         } else if (interaction.isButton()) {
             if (interaction.customId == 'update') {
                 await fetch(
-                    'https://still-caverns-77918.herokuapp.com' +
-                    // 'http://localhost:3000' +
-                '/update-users',{
+                    `${process.env.URL}update-users`,{
                     method: 'put',
                     headers: {
                         'Accept': 'application/json, text/plain, */*',

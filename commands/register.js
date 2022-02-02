@@ -2,6 +2,9 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageActionRow, MessageButton } = require('discord.js');
 const Guild  = require('../models/Guild');
 const User  = require('../models/User');
+const dotenv = require('dotenv');
+
+dotenv.config()
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -16,7 +19,7 @@ module.exports = {
             if (findUser.length == 0) {
                 let url = 'https://www.strava.com/oauth/authorize?client_id=71610' + 
                 '&response_type=code&redirect_uri=' +
-                'https://still-caverns-77918.herokuapp.com/add-user' + 
+                `${process.env.URL}add-user` + 
                 `/${interaction.guild.id}` +
                 `/${interaction.user.id}` + 
                 `/${interaction.user.username}` + 

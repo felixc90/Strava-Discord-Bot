@@ -2,6 +2,7 @@ const fetch = require('node-fetch');
 const dotenv = require('dotenv');
 const User  = require('./models/User');
 const Guild  = require('./models/Guild');
+const Routes  = require('./models/Route');
 
 dotenv.config()
 
@@ -22,8 +23,7 @@ function authoriseUser(discord_data, code) {
         })
     }).then(res => res.json())
         .then(async data => {
-            console.log('Adding new user...bruh')
-            console.log(data)
+            console.log('Adding new user...')
             const user = new User({
                 'strava_id' : data.athlete.id,
                 'discord_id' : discord_data.user_id,
@@ -32,6 +32,23 @@ function authoriseUser(discord_data, code) {
                 'username' : discord_data.username,
                 'profile' : data.athlete.profile,
                 'guilds' : [discord_data.guild_id],
+                'sex' : data.athlete.sex,
+                'region' : data.athlete.city + data.athlete.state + data.athlete.country,
+                'created_at' : data.athlete.created_at,
+                'joined_at' : new Date(),
+                'days_last_active' : -1,
+                'most_recent_run' : {
+                    'time' : 0,
+                    'id': -1
+                },
+                'longest_run' : {
+                    'date' : 0,
+                    'time' : -1,
+                    'distance' : -1,
+                    'name' : '',
+                    'start_latlng' : [],
+                    'end_latlng' : [],
+                },
                 'statistics' : [{
                     'week_starting' : getMonday(new Date()),
                     'total_distance' : 0,
@@ -40,30 +57,14 @@ function authoriseUser(discord_data, code) {
                         'total_distance' : 0, 
                         'total_time' : 0}),
                 }],
-                'created_at' : data.athlete.created_at,
-                'joined_at' : new Date(),
-                'sex' : data.athlete.sex,
-                'region' : data.athlete.city + data.athlete.state + data.athlete.country,
-                'days_last_active' : -1,
-                'routes' : [],
-                'longest_run' : {
-                    'date' : -1,
-                    'time' : -1,
-                    'distance' : -1,
-                    'name' : '',
-                    'start_latlng' : [],
-                    'end_latlng' : [],
-                },
-                'most_recent_run' : -1,
+                'number_of_runs' : 0,
                 'total_distance' : 0,
                 'total_time' : 0
             })
-            const findGuild = await Guild.find({guild_id : discord_data.guild_id})
-            let guild = findGuild[0]
+            let guild = await Guild.findOne({guild_id : discord_data.guild_id})
             guild.members.push(user.discord_id)
             await guild.save()
             await user.save()
-            console.log('Done!')
             }
         )
 }
@@ -94,58 +95,47 @@ function getActivities(res, user) {
         .then(async (data) => 
         {   
             await updateWeeks(user)
-            let week = getMonday(new Date())
-            let week_counter = 0
+            let curr_week = getMonday(new Date())
+            let week_index = 0
+            let latest_run = -1
             for (let run = 0; run < data.length; run++) {
                 // console.log(data[run].id, data[run].map.summary_polyline)
                 // continue
-                if (user.most_recent_run == data[run].id) break
-                if (user.most_recent_run == -1 && 
-                    (getMonday(data[run].start_date) - week != 0)) break
+                let run_date = getMonday(data[run].start_date)
+                if (user.most_recent_run.id == data[run].id) {
+                    console.log('Already added run with this id.')
+                    break
+                }
+                console.log(user.most_recent_run.time, new Date(data[run].start_date))
+                if (user.most_recent_run.id != -1 &&
+                    new Date(data[run].start_date) - user.most_recent_run.time <= 0) {
+                    console.log('Already added run with this time.')
+                    break
+                } 
+                if ((run_date - curr_week < 0) && user.most_recent_run.id == -1) {
+                    console.log('New users can only add this week\'s runs.')
+                    break
+                }
                 if (data[run].type != "Run") continue
-                while (getMonday(data[run].start_date) - week != 0) {
-                    let prev_week = new Date(week)
+                if (latest_run == -1) latest_run = run
+                console.log(data[run].start_date)
+                while (run_date - curr_week != 0) {
+                    console.log(run_date, curr_week)
+                    let prev_week = new Date(curr_week)
                     prev_week.setDate(prev_week.getDate() - 7)
-                    week = prev_week
-                    week_counter++
+                    curr_week = prev_week
+                    week_index++
                 }
-                const distance = data[run].distance / 1000
-                const moving_time = data[run].moving_time / 60
-                const tmp_date = new Date(data[run].start_date)
-                const day = (tmp_date.getDay() + 6) % 7
-
-                const statistics_week = {
-                    total_distance : user.statistics[week_counter].total_distance + distance,
-                    total_time : user.statistics[week_counter].total_time + moving_time,
-                    week_starting : user.statistics[week_counter].week_starting,
-                    statistics_by_day: user.statistics[week_counter].statistics_by_day
-                }
-                statistics_week.statistics_by_day[day].total_distance += distance
-                statistics_week.statistics_by_day[day].total_time += moving_time
-                user.statistics.set(week_counter, statistics_week)
-                user.total_distance += distance
-                user.total_time += moving_time
-                console.log(data[run].id, data[run].start_latlng, data[run].end_latlng)
-                if (distance >= user.longest_run.distance) {
-                    user.longest_run = {
-                        date: tmp_date,
-                        time: moving_time,
-                        distance: distance,
-                        name: data[run].name,
-                        start_latlng: Array.from(data[run].start_latlng),
-                        end_latlng: Array.from(data[run].end_latlng),
-                    }
-                    console.log(user.longest_run)
-                }
-
-                if (data[run].map.summary_polyline != null) {
-                    user.routes.push(data[run].map.summary_polyline)
-                }
+                console.log(week_index)
+                await updateStatistics(user, data[run], week_index)
             }
-            console.log(user.name)
-            if (data.length != 0) user.most_recent_run = data[0].id
+            if (latest_run != -1) {
+                user.most_recent_run.id = data[latest_run].id
+                let new_date = new Date(data[latest_run].start_date)
+                user.most_recent_run.time = new_date
+            }
             user.days_last_active = updateActiveDays(user)
-            await user.save() 
+            await user.save()
         })
 }
 
@@ -165,13 +155,6 @@ async function addGuild(guild_id) {
     await guild.save()
     console.log(guild)
 }
-
-module.exports = {
-    authoriseUser: authoriseUser,
-    reAuthorize: reAuthorize,
-    addGuild: addGuild
-};
-
 
 async function updateWeeks(user) {
     const curr_week = getMonday(new Date())
@@ -199,8 +182,7 @@ function getMonday(d) {
     var day = d.getDay(),
         diff = d.getDate() - day + (day == 0 ? -6:1); // adjust when day is sunday
     return new Date(d.setDate(diff));
-  }
-
+}
 
 function updateActiveDays(user) {
     let days_last_active = 0 
@@ -226,3 +208,38 @@ function updateActiveDays(user) {
     }
     return days_last_active - inactive_days
 }
+
+async function updateStatistics(user, run, week_index) {
+    const distance = run.distance / 1000
+    const moving_time = run.moving_time / 60
+    const start_date = new Date(run.start_date)
+    const day = (start_date.getDay() + 6) % 7
+    const statistics_week = {
+        total_distance : user.statistics[week_index].total_distance + distance,
+        total_time : user.statistics[week_index].total_time + moving_time,
+        week_starting : user.statistics[week_index].week_starting,
+        statistics_by_day: user.statistics[week_index].statistics_by_day
+    }
+    statistics_week.statistics_by_day[day].total_distance += distance
+    statistics_week.statistics_by_day[day].total_time += moving_time
+    user.statistics.set(week_index, statistics_week)
+    user.total_distance += distance
+    user.total_time += moving_time
+    if (distance >= user.longest_run.distance) {
+        user.longest_run = {
+            date: start_date,
+            time: moving_time,
+            distance: distance,
+            name: run.name,
+            start_latlng: Array.from(run.start_latlng),
+            end_latlng: Array.from(run.end_latlng),
+        }
+    }
+    await user.save()
+}
+
+module.exports = {
+    authoriseUser: authoriseUser,
+    reAuthorize: reAuthorize,
+    addGuild: addGuild
+};

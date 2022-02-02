@@ -5,17 +5,18 @@ var schema = mongoose.Schema({
     'discord_id' : Number,
     'refresh_token' : String,
     'name' : String,
-    'sex' : String,
-    'region' : String,
     'username' : String,
     'profile' : String,
     'guilds' : [Number],
-    'most_recent_run' : Number,
+    'sex' : String,
+    'region' : String,
     'created_at' :Date,
     'joined_at' : Date,
-    'routes' : [String],
-    'total_distance' : Number,
-    'total_time' : Number,
+    'days_last_active' : Number,
+    'most_recent_run' : {
+        'id': Number,
+        'time': Date
+    },
     'longest_run' : {
         'name' : String,
         'start_latlng' : [Number],
@@ -36,6 +37,8 @@ var schema = mongoose.Schema({
             
         }
     ],
-    'days_last_active' : Number
+    'total_runs' : Number,
+    'total_distance' : Number,
+    'total_time' : Number
 })
 module.exports = mongoose.model("User", schema)

@@ -1,5 +1,8 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const fetch = require('node-fetch');
+const dotenv = require('dotenv');
+
+dotenv.config()
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -7,9 +10,7 @@ module.exports = {
 		.setDescription('Updates the weekly stats'),
         async execute(interaction) {
         await fetch(
-            'https://still-caverns-77918.herokuapp.com' +
-            // 'http://localhost:3000' +
-        '/update-users',{
+            `${process.env.URL}update-users`,{
             method: 'put',
             headers: {
                 'Accept': 'application/json, text/plain, */*',
