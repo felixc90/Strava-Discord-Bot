@@ -89,9 +89,9 @@ async function reAuthorize(user) {
         .then(res => getActivities(res, user))
 }
 
-function getActivities(res, user) {
+async function getActivities(res, user) {
     const activities_link = `https://www.strava.com/api/v3/athlete/activities?access_token=${res.access_token}`
-    fetch(activities_link)
+    await fetch(activities_link)
         .then((res) => res.json())
         .then(async (data) => 
         {   
@@ -99,8 +99,9 @@ function getActivities(res, user) {
             let curr_week = getMonday(new Date())
             let week_index = 0
             let latest_run = -1
+            let return_value = {}
             for (let run = 0; run < data.length; run++) {
-                // console.log(data[run].id, data[run].map.summary_polyline)
+                console.log(data[run].name)
                 // continue
                 let run_date = getMonday(data[run].start_date)
                 if (user.most_recent_run.id == data[run].id) {
@@ -118,10 +119,15 @@ function getActivities(res, user) {
                     break
                 }
                 if (data[run].type != "Run") continue
-                if (latest_run == -1) latest_run = run
-                console.log(data[run].start_date)
+                if (latest_run == -1) {
+                    return_value = {
+                        'user' : user.username,
+                        'distance' : data[run].distance,
+                        'id' : data[run].id
+                    }
+                    latest_run = run
+                }
                 while (run_date - curr_week != 0) {
-                    console.log(run_date, curr_week)
                     let prev_week = new Date(curr_week)
                     prev_week.setDate(prev_week.getDate() - 7)
                     curr_week = prev_week
@@ -134,6 +140,8 @@ function getActivities(res, user) {
                 user.most_recent_run.id = data[latest_run].id
                 let new_date = new Date(data[latest_run].start_date)
                 user.most_recent_run.time = new_date
+                user.most_recent_run.distance = data[latest_run].distance
+                user.most_recent_run.updated_guilds = new Array
             }
             user.days_last_active = updateActiveDays(user)
             await user.save()
@@ -149,7 +157,8 @@ async function addGuild(guild_id) {
         'guild_id' : guild_id,
         'members' : users,
         'use_time' : true,
-        'page_num' : 1
+        'page_num' : 1,
+        'updates' : []
     })
     const findGuild = await Guild.find({guild_id: parseInt(guild_id)})
     if (findGuild.length != 0) return
@@ -226,7 +235,7 @@ async function updateStatistics(user, run, week_index) {
     user.statistics.set(week_index, statistics_week)
     user.total_distance += distance
     user.total_time += moving_time
-    user.total_runs ++
+    user.total_runs++
     if (distance >= user.longest_run.distance) {
         user.longest_run = {
             date: start_date,

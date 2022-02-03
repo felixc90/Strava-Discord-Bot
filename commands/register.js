@@ -13,9 +13,9 @@ module.exports = {
         async execute(interaction) {
             // console.log(interaction)
             let response = {content: 'User added to guild!', ephemeral: true}
-            const findUser = await User.find({discord_id : parseInt(interaction.user.id)})
-            const findGuild = await Guild.find({guild_id : parseInt(interaction.guild.id)})
-            console.log(findGuild)
+            const findUser = await User.find({discord_id : interaction.user.id})
+            const findGuild = await Guild.find({guild_id : interaction.guild.id})
+            console.log(findUser)
             if (findUser.length == 0) {
                 let url = 'https://www.strava.com/oauth/authorize?client_id=71610' + 
                 '&response_type=code&redirect_uri=' +

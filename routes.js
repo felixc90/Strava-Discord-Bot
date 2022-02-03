@@ -27,14 +27,14 @@ router.get('/users', async (req, res) => {
 });
 
 router.get('/routes/:user_id', async (req, res) => {
-    const user = await User.findOne({discord_id: parseInt(req.params.user_id)}, 'routes')
+    const user = await User.findOne({discord_id: req.params.user_id}, 'routes')
     res.send({'routes' : user.routes});
 });
 
 router.put('/update-users', async (req, res) => {
     console.log('Updating leaderboard...')
-    const guild = await Guild.find({guild_id: req.body.guild_id})
-    const users = await User.find({discord_id : { $in: guild[0].members } })
+    const guild = await Guild.findOne({guild_id: req.body.guild_id})
+    const users = await User.find({discord_id : { $in: guild.members } })
     for (let i = 0; i < users.length; i++) {
         reAuthorize(users[i])
     }

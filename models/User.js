@@ -1,8 +1,8 @@
 const mongoose = require('mongoose')
 
 var schema = mongoose.Schema({
-    'strava_id' : Number,
-    'discord_id' : Number,
+    'strava_id' : String,
+    'discord_id' : String,
     'refresh_token' : String,
     'name' : String,
     'username' : String,
@@ -14,8 +14,10 @@ var schema = mongoose.Schema({
     'joined_at' : Date,
     'days_last_active' : Number,
     'most_recent_run' : {
-        'id': Number,
-        'time': Date
+        'id': String,
+        'time': Date,
+        'distance' : Number,
+        'updated_guilds' : [String]
     },
     'longest_run' : {
         'name' : String,
