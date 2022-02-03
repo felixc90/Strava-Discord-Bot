@@ -51,6 +51,7 @@ module.exports = {
                 Gender: **${user.sex}**
                 Last Ran: **${last_run - 1} day(s) ago**`, inline: true},
                 {name: '⚡️ Quick Statistics', value: `
+                Total Runs: **${user.total_runs.toFixed(0)} min**
                 Total Distance: **${user.total_distance.toFixed(0)}km**
                 Total Time: **${user.total_time.toFixed(0)} min**
                 Average Pace: **${user.total_distance == 0 ? 0 : toPace((user.total_time / user.total_distance).toFixed(2))} min/km**

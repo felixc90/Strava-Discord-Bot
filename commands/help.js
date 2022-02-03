@@ -12,12 +12,12 @@ module.exports = {
             .setTitle(`Achilles Bot Help`)
             .addFields(
                 {'name' : '💯 Register User - `/register`', 'value': 'Adds the user\'s statistics to the server.', 'inline': false},
-                {'name' : '🎉  Display Leaderboard - `/leaderboard`',
-                'value': 'Displays the weekly strava leaderboard based on time or distance.', 'inline': false},
-                {'name' : '⚡️ Update Leaderboard - `/update`', 'value': 'Force updates the weekly statistics.', 'inline': false},
-                {'name' : '👟 Mileage - `/mileage <time unit> <name>`', 'value': 'Displays a graph of given users\' recent activity.', 'inline': false},
                 {'name' : '🏃‍♂️ Athlete Profile - `/profile`', 'value': 'Shows athlete profile and some quick statistics.', 'inline': false},
-                {'name' : '🔥 Heatmap - `/heatmap`', 'value': 'Generates a thermal map of runners in the server.', 'inline': false},
+                {'name' : '👟 Mileage Graph - `/mileage <time unit> <name>`', 'value': 'Displays a graph of specified users\' recent activity.', 'inline': false},
+                {'name' : '⏱ Statistics - `/statistics <time unit> <name>`', 'value': 'Compares users\' statistics over time using tabular data.', 'inline': false},
+                {'name' : '🎉  Display Leaderboard - `/leaderboard`',
+                'value': 'Displays the weekly Strava leaderboard based on time or distance.', 'inline': false},
+                {'name' : '⚡️ Force Update - `/update`', 'value': 'Force updates the weekly statistics.', 'inline': false},
                 {'name' : '🚩 Flag - `/flag`', 'value': 'Shows various points of interest (flags) to user.', 'inline': false}
             )
         await interaction.reply({embeds : [helpEmbed]})
