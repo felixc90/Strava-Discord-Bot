@@ -119,28 +119,24 @@ async function getActivities(res, user) {
                     break
                 }
                 if (data[run].type != "Run") continue
-                if (latest_run == -1) {
-                    return_value = {
-                        'user' : user.username,
-                        'distance' : data[run].distance,
-                        'id' : data[run].id
-                    }
-                    latest_run = run
-                }
                 while (run_date - curr_week != 0) {
                     let prev_week = new Date(curr_week)
                     prev_week.setDate(prev_week.getDate() - 7)
                     curr_week = prev_week
                     week_index++
                 }
-                console.log(week_index)
+                routes = await Route.findOne({})
+                if (data[run].map.summary_polyline != null &&
+                !routes.includes(data[run].map.summary_polyline)) {
+                    routes.push(data[run].map.summary_polyline)
+                }
                 await updateStatistics(user, data[run], week_index)
             }
             if (latest_run != -1) {
                 user.most_recent_run.id = data[latest_run].id
                 let new_date = new Date(data[latest_run].start_date)
                 user.most_recent_run.time = new_date
-                user.most_recent_run.distance = data[latest_run].distance
+                user.most_recent_run.distance = data[latest_run].distance / 1000
                 user.most_recent_run.updated_guilds = new Array
             }
             user.days_last_active = updateActiveDays(user)

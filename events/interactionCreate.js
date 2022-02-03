@@ -16,25 +16,20 @@ module.exports = {
             }
         } else if (interaction.isButton()) {
             if (interaction.customId == 'update') {
-                await fetch(
-                    `${process.env.URL}update-users`,{
+                await fetch(`${process.env.URL}update-users`, {
                     method: 'put',
-                    headers: {
-                        'Accept': 'application/json, text/plain, */*',
-                        'Content-Type': 'application/json'
-                    },
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         guild_id: interaction.guild.id,
                         toggle_key: true
                     })
+                }).then(async () => {
+
+                const guild = await Guild.find({guild_id: interaction.guild.id})
+                const leaderboardEmbed = await getEmbed(guild[0].use_time, interaction.guild.id, 1)
+                const leaderboardRow = getRow(guild[0].use_time, 1)
+                await interaction.reply({ embeds: [leaderboardEmbed], components: [leaderboardRow]})
                 })
-                .then( async () => {
-                    const guild = await Guild.find({guild_id: interaction.guild.id})
-                    const leaderboardEmbed = await getEmbed(guild[0].use_time, interaction.guild.id, 1)
-                    const leaderboardRow = getRow(guild[0].use_time, 1)
-                    await interaction.reply({ embeds: [leaderboardEmbed], components: [leaderboardRow]})
-                    }
-                )
                 // .then(interaction.reply({ content: '⚡️stats has been updated⚡️'}));
             } else if (interaction.customId == 'toggle-key') {
                 const guild = await Guild.find({guild_id: interaction.guild.id})
