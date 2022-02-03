@@ -59,7 +59,8 @@ function authoriseUser(discord_data, code) {
                 }],
                 'number_of_runs' : 0,
                 'total_distance' : 0,
-                'total_time' : 0
+                'total_time' : 0,
+                'total_runs' : 0,
             })
             let guild = await Guild.findOne({guild_id : discord_data.guild_id})
             guild.members.push(user.discord_id)
@@ -225,6 +226,7 @@ async function updateStatistics(user, run, week_index) {
     user.statistics.set(week_index, statistics_week)
     user.total_distance += distance
     user.total_time += moving_time
+    user.total_runs ++
     if (distance >= user.longest_run.distance) {
         user.longest_run = {
             date: start_date,
