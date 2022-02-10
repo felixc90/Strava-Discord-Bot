@@ -29,14 +29,14 @@ module.exports = {
         if (typeof embed === 'string') {
             embed = new MessageEmbed()
             .setColor('#05CBE1')
-            .setDescription('❗️**' + graph + '** is not registered❗️\n\n Use `/register` to add to the database. ✨')
+            .setDescription('❗️**' + embed + '** is not registered❗️\n\n Use `/register` to add to the database. ✨')
         }
         await interaction.reply({embeds : [embed]})
     }
 };
 
 async function getEmbed(interaction) {
-    let user = await User.findOne({discord_id : parseInt(interaction.user.id)})
+    let user = await User.findOne({discord_id : interaction.user.id})
     if (user == null) return interaction.user.username
     let subcommand = interaction.options._subcommand
     let num = subcommand == 'day' ? user.days_last_active : user.statistics.length + 1
@@ -44,7 +44,7 @@ async function getEmbed(interaction) {
     let username = user.username
     var user1, distances1, times1, column_width1, username1
     if (interaction.options._hoistedOptions.length != 0) {
-        user1 = await User.findOne({discord_id : parseInt(interaction.options._hoistedOptions[0].user.id)})
+        user1 = await User.findOne({discord_id : interaction.options._hoistedOptions[0].user.id})
         if (user1 == null) return interaction.options._hoistedOptions[0].user.username
         if (user1.days_last_active > user.days_last_active && subcommand == 'day') num = user1.days_last_active
         if (user1.statistics.length > user.statistics.length && subcommand == 'week') num = user1.statistics.length + 1

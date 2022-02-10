@@ -2,7 +2,7 @@ const fetch = require('node-fetch');
 const dotenv = require('dotenv');
 const User  = require('./models/User');
 const Guild  = require('./models/Guild');
-const Routes  = require('./models/Route');
+const Route  = require('./models/Route');
 
 dotenv.config()
 
@@ -39,7 +39,9 @@ function authoriseUser(discord_data, code) {
                 'days_last_active' : -1,
                 'most_recent_run' : {
                     'time' : 0,
-                    'id': -1
+                    'id': -1,
+                    'distance' : -1,
+                    'updated_guilds' : []
                 },
                 'longest_run' : {
                     'date' : 0,
@@ -57,7 +59,6 @@ function authoriseUser(discord_data, code) {
                         'total_distance' : 0, 
                         'total_time' : 0}),
                 }],
-                'number_of_runs' : 0,
                 'total_distance' : 0,
                 'total_time' : 0,
                 'total_runs' : 0,
@@ -101,14 +102,12 @@ async function getActivities(res, user) {
             let latest_run = -1
             let return_value = {}
             for (let run = 0; run < data.length; run++) {
-                console.log(data[run].name)
                 // continue
                 let run_date = getMonday(data[run].start_date)
                 if (user.most_recent_run.id == data[run].id) {
                     console.log('Already added run with this id.')
                     break
                 }
-                console.log(user.most_recent_run.time, new Date(data[run].start_date))
                 if (user.most_recent_run.id != -1 &&
                     new Date(data[run].start_date) - user.most_recent_run.time <= 0) {
                     console.log('Already added run with this time.')
@@ -119,13 +118,14 @@ async function getActivities(res, user) {
                     break
                 }
                 if (data[run].type != "Run") continue
+                if (latest_run == -1) latest_run = run
                 while (run_date - curr_week != 0) {
                     let prev_week = new Date(curr_week)
                     prev_week.setDate(prev_week.getDate() - 7)
                     curr_week = prev_week
                     week_index++
                 }
-                routes = await Route.findOne({})
+                routes = await Route.find({})
                 if (data[run].map.summary_polyline != null &&
                 !routes.includes(data[run].map.summary_polyline)) {
                     routes.push(data[run].map.summary_polyline)
@@ -134,6 +134,7 @@ async function getActivities(res, user) {
             }
             if (latest_run != -1) {
                 user.most_recent_run.id = data[latest_run].id
+                console.log(user.most_recent_run.id)
                 let new_date = new Date(data[latest_run].start_date)
                 user.most_recent_run.time = new_date
                 user.most_recent_run.distance = data[latest_run].distance / 1000
@@ -145,21 +146,18 @@ async function getActivities(res, user) {
 }
 
 async function addGuild(guild_id) {
-    console.log(guild_id)
+    console.log('Adding guild: ' + guild_id)
     let users = await User.find({ guilds: guild_id } , 'discord_id')
     users = users.map(user => user.discord_id)
-    console.log(users)
     const guild = new Guild({
         'guild_id' : guild_id,
         'members' : users,
         'use_time' : true,
         'page_num' : 1,
-        'updates' : []
     })
     const findGuild = await Guild.find({guild_id: parseInt(guild_id)})
     if (findGuild.length != 0) return
     await guild.save()
-    console.log(guild)
 }
 
 async function updateWeeks(user) {
@@ -202,8 +200,10 @@ function updateActiveDays(user) {
                 continue
             }
             days_last_active++;
+            // console.log('active', days_last_active)
             if (week.statistics_by_day[num_day].total_distance == 0) {
                 inactive_days++
+                // console.log('inactive', num_day)
             } else {
                 inactive_days = 0
             }
