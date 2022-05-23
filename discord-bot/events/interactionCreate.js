@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 const {getEmbed, getRow} = require('../commands/leaderboard')
-const Guild = require('../models/Guild')
+const Guild = require('../../models/Guild')
 module.exports = {
 	name: 'interactionCreate',
 	async execute(client, interaction) {

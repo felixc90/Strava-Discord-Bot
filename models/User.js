@@ -1,4 +1,6 @@
 const mongoose = require('mongoose')
+const Run  = require('./Run');
+const Week  = require('./Week');
 
 var schema = mongoose.Schema({
     'strava_id' : String,
@@ -12,35 +14,15 @@ var schema = mongoose.Schema({
     'region' : String,
     'created_at' :Date,
     'joined_at' : Date,
-    'days_last_active' : Number,
-    'most_recent_run' : {
-        'id': String,
-        'time': Date,
-        'distance' : Number,
-        'updated_guilds' : [String]
+    'statistics' : {
+        'total_runs' : Number,
+        'total_distance' : Number,
+        'total_time' : Number,
+        'days_last_active' : Number,
+        'most_recent_run' : Run,
+        'longest_run' : Run,
+        'run_data' : [Week]
     },
-    'longest_run' : {
-        'name' : String,
-        'start_latlng' : [Number],
-        'end_latlng' : [Number],
-        'date' : Date,
-        'time' : Number,
-        'distance' : Number
-    },
-    'statistics' : [
-        {
-            'week_starting' : Date,
-            'total_distance' : Number,
-            'total_time' : Number,
-            'statistics_by_day' : [{
-                'total_distance' : Number,
-                'total_time' : Number,
-            }],
-            
-        }
-    ],
-    'total_runs' : Number,
-    'total_distance' : Number,
-    'total_time' : Number
+    
 })
 module.exports = mongoose.model("User", schema)

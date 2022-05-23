@@ -9,17 +9,17 @@ myIntents.add(Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILDS);
 const client = new Client({ intents: myIntents });
 
 client.commands = new Collection();
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'))
+const commandFiles = fs.readdirSync('./discord-bot/commands').filter(file => file.endsWith('.js'))
 
 for (const file of commandFiles) {
-	const command = require(`./commands/${file}`);
+	const command = require(`./discord-bot/commands/${file}`);
     client.commands.set(command.data.name, command)
 }
 
-const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
+const eventFiles = fs.readdirSync('./discord-bot/events').filter(file => file.endsWith('.js'));
 
 for (const file of eventFiles) {
-    const event = require(`./events/${file}`);
+    const event = require(`./discord-bot/events/${file}`);
 	if (event.once) {
 		client.once(event.name, (...args) => event.execute(client,...args));
 	} else {

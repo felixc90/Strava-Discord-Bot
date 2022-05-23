@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
-const User = require('../models/User')
-const Guild = require('../models/Guild')
+const User = require('../../models/User')
+const Guild = require('../../models/Guild')
 
 
 module.exports = {
@@ -18,13 +18,15 @@ module.exports = {
         //         .setDescription('What ran the most kilometres?')),
         async execute(interaction) {
             // console.log(interaction)
-        const guild = await Guild.find({guild_id: interaction.guild.id})
-        if (guild[0].page_num == 2) {
-            guild[0].page_num = 1;
-            guild[0].save()
+        
+        const guild = await Guild.findOne({guild_id: interaction.guild.id})
+        console.log(interaction.guild)
+        if (guild.page_num == 2) {
+            guild.page_num = 1;
+            guild.save()
         }
-        const leaderboardEmbed = await getEmbed(guild[0].use_time, guild[0].guild_id, 1)
-        const leaderboardRow = getRow(guild[0].use_time, 1)
+        const leaderboardEmbed = await getEmbed(guild.use_time, guild.guild_id, 1)
+        const leaderboardRow = getRow(guild.use_time, 1)
         await interaction.reply({ embeds: [leaderboardEmbed], components: [leaderboardRow]})
         },
         getEmbed: getEmbed,

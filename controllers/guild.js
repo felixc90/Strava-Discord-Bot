@@ -1,80 +1,47 @@
 const fetch = require('node-fetch');
 const dotenv = require('dotenv');
-const User  = require('./models/User');
-const Guild  = require('./models/Guild');
-const Route  = require('./models/Route');
+const User  = require('../models/User');
+const Guild  = require('../models/Guild');
+const Route  = require('../models/Route');
 
 dotenv.config()
 
 const auth_link = "https://www.strava.com/oauth/token"
 
-function authoriseUser(discord_data, code) {
-    fetch(auth_link,{
-        method: 'post',
-        headers: {
-            'Accept': 'application/json, text/plain, */*',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            client_id: '71610',
-            client_secret: process.env.STRAVA_CLIENT_SECRET,
-            code: code,
-            grant_type: 'authorization_code'
-        })
-    }).then(res => res.json())
-        .then(async data => {
-            console.log('Adding new user...')
-            const user = new User({
-                'strava_id' : data.athlete.id,
-                'discord_id' : discord_data.user_id,
-                'refresh_token' : data.refresh_token,
-                'name' : `${data.athlete.firstname} ${data.athlete.lastname}`,
-                'username' : discord_data.username,
-                'profile' : data.athlete.profile,
-                'guilds' : [discord_data.guild_id],
-                'sex' : data.athlete.sex,
-                'region' : data.athlete.city + data.athlete.state + data.athlete.country,
-                'created_at' : data.athlete.created_at,
-                'joined_at' : new Date(),
-                'days_last_active' : -1,
-                'most_recent_run' : {
-                    'time' : 0,
-                    'id': -1,
-                    'distance' : -1,
-                    'updated_guilds' : []
-                },
-                'longest_run' : {
-                    'date' : 0,
-                    'time' : -1,
-                    'distance' : -1,
-                    'name' : '',
-                    'start_latlng' : [],
-                    'end_latlng' : [],
-                },
-                'statistics' : [{
-                    'week_starting' : getMonday(new Date()),
-                    'total_distance' : 0,
-                    'total_time' : 0,
-                    'statistics_by_day' : Array(7).fill({
-                        'total_distance' : 0, 
-                        'total_time' : 0}),
-                }],
-                'total_distance' : 0,
-                'total_time' : 0,
-                'total_runs' : 0,
-            })
-            let guild = await Guild.findOne({guild_id : discord_data.guild_id})
-            guild.members.push(user.discord_id)
-            await guild.save()
-            await user.save()
-            }
-        )
+exports.add = async (req, res) => {
+    const guild_id = req.body.guild_id;
+    addGuild(guild_id);
+    res.send({message: "New guild added!"});
+}
+
+async function addGuild(guild_id) {
+    console.log('Adding guild: ' + guild_id)
+    let users = await User.find({ guilds: guild_id } , 'discord_id')
+    users = users.map(user => user.discord_id)
+    const guild = new Guild({
+        'guild_id' : guild_id,
+        'members' : users,
+        'use_time' : true,
+        'page_num' : 1,
+    })
+    const findGuild = await Guild.find({guild_id: parseInt(guild_id)})
+    if (findGuild.length != 0) return
+    await guild.save()
+}
+
+exports.update = async (req, res) => {
+    console.log('Updating Users...')
+    const guild = await Guild.findOne({guild_id: req.body.guild_id})
+    const users = await User.find({discord_id : { $in: guild.members } })
+    for (let i = 0; i < users.length; i++) {
+        reAuthorize(users[i])
+    }
+    res.send({message: "Users updated!"});
 }
 
 async function reAuthorize(user) {
     await fetch(auth_link, {
         method: 'post',
-
         headers: {
             'Accept': 'application/json, text/plain, */*',
             'Content-Type': 'application/json'
@@ -97,6 +64,7 @@ async function getActivities(res, user) {
         .then(async (data) => 
         {   
             await updateWeeks(user)
+            // console.log(data)
             let curr_week = getMonday(new Date())
             let week_index = 0
             let latest_run = -1
@@ -145,25 +113,11 @@ async function getActivities(res, user) {
         })
 }
 
-async function addGuild(guild_id) {
-    console.log('Adding guild: ' + guild_id)
-    let users = await User.find({ guilds: guild_id } , 'discord_id')
-    users = users.map(user => user.discord_id)
-    const guild = new Guild({
-        'guild_id' : guild_id,
-        'members' : users,
-        'use_time' : true,
-        'page_num' : 1,
-    })
-    const findGuild = await Guild.find({guild_id: parseInt(guild_id)})
-    if (findGuild.length != 0) return
-    await guild.save()
-}
-
 async function updateWeeks(user) {
     const curr_week = getMonday(new Date())
     let week = user.statistics[0].week_starting;
-    while (curr_week - week != 0) {
+    while (curr_week - week >= 0) {
+        console.log(curr_week - week)
         let next_week = new Date(week)
         next_week.setDate(next_week.getDate() + 7)
         week = next_week
@@ -244,9 +198,3 @@ async function updateStatistics(user, run, week_index) {
     }
     await user.save()
 }
-
-module.exports = {
-    authoriseUser: authoriseUser,
-    reAuthorize: reAuthorize,
-    addGuild: addGuild
-};

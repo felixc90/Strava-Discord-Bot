@@ -1,9 +1,9 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { ChartJSNodeCanvas } = require('chartjs-node-canvas');
 const { MessageAttachment, MessageEmbed } = require('discord.js');
-const { toPace, getData } = require('../helpers.js')
+const { toPace, getData } = require('../../controllers/helpers.js')
 const {registerFont} = require("canvas")
-const User = require('../models/User')
+const User = require('../../models/User')
 
 module.exports = {
 	data: new SlashCommandBuilder()

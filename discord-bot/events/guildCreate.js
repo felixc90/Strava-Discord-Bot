@@ -10,7 +10,7 @@ module.exports = {
 		console.log("Joined a new guild");
         const Guilds = client.guilds.cache.map(guild => guild.id);
         console.log(Guilds[Guilds.length - 1]);
-        fetch(`${process.env.URL}add-guild`, {
+        fetch(`${process.env.URL}guild/add`, {
             method: 'post',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({

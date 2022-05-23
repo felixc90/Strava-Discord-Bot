@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
 const dotenv = require('dotenv');
-const User  = require('../models/User');
+const User  = require('../../models/User');
 const fetch = require('node-fetch');
 
 dotenv.config()

@@ -1,8 +1,8 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const fetch = require('node-fetch');
 const dotenv = require('dotenv');
-const User = require('../models/User');
-const Guild = require('../models/Guild');
+const User = require('../../models/User');
+const Guild = require('../../models/Guild');
 
 
 dotenv.config()
@@ -12,7 +12,7 @@ module.exports = {
 		.setName('update')
 		.setDescription('Updates the weekly stats'),
         async execute(interaction) {
-        await fetch(`${process.env.URL}update-users`, {
+        await fetch(`${process.env.URL}guild/update`, {
             method: 'put',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
