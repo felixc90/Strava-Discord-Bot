@@ -16,6 +16,8 @@ exports.add = async (req, res) => {
 
 async function addGuild(guild_id) {
     console.log('Adding guild: ' + guild_id)
+    // Not fully sure the following line works. It supposedley adds all users
+    // who have previously registered into the guild
     let users = await User.find({ guilds: guild_id } , 'discord_id')
     users = users.map(user => user.discord_id)
     const guild = new Guild({
@@ -32,6 +34,7 @@ async function addGuild(guild_id) {
 exports.update = async (req, res) => {
     console.log('Updating Users...')
     const guild = await Guild.findOne({guild_id: req.body.guild_id})
+    console.log(guild)
     const users = await User.find({discord_id : { $in: guild.members } })
     for (let i = 0; i < users.length; i++) {
         reAuthorize(users[i])
@@ -65,73 +68,74 @@ async function getActivities(res, user) {
         {   
             await updateWeeks(user)
             // console.log(data)
-            let curr_week = getMonday(new Date())
-            let week_index = 0
-            let latest_run = -1
-            let return_value = {}
-            for (let run = 0; run < data.length; run++) {
-                // continue
-                let run_date = getMonday(data[run].start_date)
-                if (user.most_recent_run.id == data[run].id) {
-                    console.log('Already added run with this id.')
-                    break
-                }
-                if (user.most_recent_run.id != -1 &&
-                    new Date(data[run].start_date) - user.most_recent_run.time <= 0) {
-                    console.log('Already added run with this time.')
-                    break
-                } 
-                if ((run_date - curr_week < 0) && user.most_recent_run.id == -1) {
-                    console.log('New users can only add this week\'s runs.')
-                    break
-                }
-                if (data[run].type != "Run") continue
-                if (latest_run == -1) latest_run = run
-                while (run_date - curr_week != 0) {
-                    let prev_week = new Date(curr_week)
-                    prev_week.setDate(prev_week.getDate() - 7)
-                    curr_week = prev_week
-                    week_index++
-                }
-                routes = await Route.find({})
-                if (data[run].map.summary_polyline != null &&
-                !routes.includes(data[run].map.summary_polyline)) {
-                    routes.push(data[run].map.summary_polyline)
-                }
-                await updateStatistics(user, data[run], week_index)
-            }
-            if (latest_run != -1) {
-                user.most_recent_run.id = data[latest_run].id
-                console.log(user.most_recent_run.id)
-                let new_date = new Date(data[latest_run].start_date)
-                user.most_recent_run.time = new_date
-                user.most_recent_run.distance = data[latest_run].distance / 1000
-                user.most_recent_run.updated_guilds = new Array
-            }
-            user.days_last_active = updateActiveDays(user)
-            await user.save()
+        //     let curr_week = getMonday(new Date())
+        //     let week_index = 0
+        //     let latest_run = -1
+        //     let return_value = {}
+        //     for (let run = 0; run < data.length; run++) {
+        //         // continue
+        //         let run_date = getMonday(data[run].start_date)
+        //         if (user.most_recent_run.id == data[run].id) {
+        //             console.log('Already added run with this id.')
+        //             break
+        //         }
+        //         if (user.most_recent_run.id != -1 &&
+        //             new Date(data[run].start_date) - user.most_recent_run.time <= 0) {
+        //             console.log('Already added run with this time.')
+        //             break
+        //         } 
+        //         if ((run_date - curr_week < 0) && user.most_recent_run.id == -1) {
+        //             console.log('New users can only add this week\'s runs.')
+        //             break
+        //         }
+        //         if (data[run].type != "Run") continue
+        //         if (latest_run == -1) latest_run = run
+        //         while (run_date - curr_week != 0) {
+        //             let prev_week = new Date(curr_week)
+        //             prev_week.setDate(prev_week.getDate() - 7)
+        //             curr_week = prev_week
+        //             week_index++
+        //         }
+        //         routes = await Route.find({})
+        //         if (data[run].map.summary_polyline != null &&
+        //         !routes.includes(data[run].map.summary_polyline)) {
+        //             routes.push(data[run].map.summary_polyline)
+        //         }
+        //         await updateStatistics(user, data[run], week_index)
+        //     }
+        //     if (latest_run != -1) {
+        //         user.most_recent_run.id = data[latest_run].id
+        //         console.log(user.most_recent_run.id)
+        //         let new_date = new Date(data[latest_run].start_date)
+        //         user.most_recent_run.time = new_date
+        //         user.most_recent_run.distance = data[latest_run].distance / 1000
+        //         user.most_recent_run.updated_guilds = new Array
+        //     }
+        //     user.days_last_active = updateActiveDays(user)
+        //     await user.save()
         })
 }
 
 async function updateWeeks(user) {
     const curr_week = getMonday(new Date())
-    let week = user.statistics[0].week_starting;
-    while (curr_week - week >= 0) {
-        console.log(curr_week - week)
-        let next_week = new Date(week)
-        next_week.setDate(next_week.getDate() + 7)
-        week = next_week
-        let week_data = {
-            'week_starting' : week,
-            'total_distance' : 0,
-            'total_time' : 0,
-            'statistics_by_day' : Array(7).fill({
-                'total_distance' : 0, 
-                'total_time' : 0})
-        }
-        await user.statistics.unshift(week_data)
-    }
-    await user.save()
+    // console.log(curr_week)
+    // let week = user.statistics[0].week_starting;
+    // while (curr_week - week >= 0) {
+    //     console.log(curr_week - week)
+    //     let next_week = new Date(week)
+    //     next_week.setDate(next_week.getDate() + 7)
+    //     week = next_week
+    //     let week_data = {
+    //         'week_starting' : week,
+    //         'total_distance' : 0,
+    //         'total_time' : 0,
+    //         'statistics_by_day' : Array(7).fill({
+    //             'total_distance' : 0, 
+    //             'total_time' : 0})
+    //     }
+    //     await user.statistics.unshift(week_data)
+    // }
+    // await user.save()
 }
 
 function getMonday(d) {
