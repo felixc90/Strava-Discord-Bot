@@ -8,14 +8,17 @@ dotenv.config()
 
 const auth_link = "https://www.strava.com/oauth/token"
 
-exports.updateUsers = updateUsers (guild_id) {
+module.exports = {
+    updateUsers : updateUsers
+}
+
+async function updateUsers(guild_id) {
     console.log('Updating Users...')
     const guild = await Guild.findOne({guild_id: guild_id})
     const users = await User.find({discord_id : { $in: guild.members } })
     for (const user of users) {
         reAuthorize(user)
     }
-    res.send({message: "Users updated!"});
 }
 
 async function reAuthorize(user) {

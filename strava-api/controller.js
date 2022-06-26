@@ -13,7 +13,6 @@ exports.register = async (req, res) => {
     res.send({message: "New user authorised!"});
 }
 
-
 function authoriseUser(discord_data, code) {
     fetch(auth_link,{
         method: 'post',

@@ -1,12 +1,15 @@
 const fetch = require('node-fetch');
 const dotenv = require('dotenv');
 
+const Guild = require('../models/Guild')
+const User = require('../models/User')
+
 dotenv.config()
 
 module.exports = {
 	name: 'guildCreate',
 	once: true,
-	execute(client) {
+	async execute(client) {
 		console.log("Joined a new guild");
         const Guilds = client.guilds.cache.map(guild => guild.id);
         const guild_id = Guilds[Guilds.length - 1]

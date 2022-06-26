@@ -1,8 +1,7 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const dotenv = require('dotenv')
-const userRoutes = require("./routes/user");
-const guildRoutes = require("./routes/guild");
+const routes = require("./strava-api/routes.js");
 const cors = require('cors')
 dotenv.config()
 
@@ -17,8 +16,7 @@ mongoose
         app.use(cors({
             origin: 'http://localhost:3000'
         }))
-        app.use("/user", userRoutes);
-        app.use("/guild", guildRoutes);
+        app.use("/user", routes);
         app.listen(process.env.PORT, () => {
             console.log('Your app is listening on port ' + process.env.PORT)
         })
