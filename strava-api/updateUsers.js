@@ -8,34 +8,9 @@ dotenv.config()
 
 const auth_link = "https://www.strava.com/oauth/token"
 
-exports.add = async (req, res) => {
-    const guild_id = req.body.guild_id;
-    addGuild(guild_id);
-    res.send({message: "New guild added!"});
-}
-
-async function addGuild(guild_id) {
-    console.log('Adding guild: ' + guild_id)
-    const findGuild = await Guild.find({guild_id: parseInt(guild_id)})
-    if (findGuild.length != 0) {
-        console.log('Guild already exists!')
-    }
-    // Not fully sure the following line works. It supposedly adds all users
-    // who have previously registered into the guild
-    let users = await User.find({ guilds: guild_id } , 'discord_id')
-    users = users.map(user => user.discord_id)
-    const guild = new Guild({
-        'guild_id' : guild_id,
-        'members' : users,
-        'use_time' : true,
-        'page_num' : 1,
-    })
-    await guild.save()
-}
-
-exports.update = async (req, res) => {
+exports.updateUsers = updateUsers (guild_id) {
     console.log('Updating Users...')
-    const guild = await Guild.findOne({guild_id: req.body.guild_id})
+    const guild = await Guild.findOne({guild_id: guild_id})
     const users = await User.find({discord_id : { $in: guild.members } })
     for (const user of users) {
         reAuthorize(user)
@@ -96,49 +71,4 @@ async function getActivities(res, user) {
             }
             user.save()
         })
-}
-
-exports.weeklydata = async (req, res) => {
-    console.log('Updating Users...')
-    const guild = await Guild.findOne({guild_id: req.params.guild_id})
-    res.send({weekly_data: await getWeeklyData(guild)
-        useTime : guild.use_time,
-    });
-}
-
-async function getWeeklyData(guild) {
-    const response = []
-    for (const member_id of guild.members) {
-        let weekly_distance = 0;
-        let weekly_time = 0;
-        const user = await User.findOne({discord_id: member_id})
-        const runs = (await user.statistics.populate({path: 'runs'})).runs
-        const today = new Date()
-        for (const run of runs) {
-            if (run.date < getStartOfWeek(new Date())) {
-                break
-            }
-            weekly_distance += run.distance
-            weekly_time += run.time
-        }
-        response.push({
-            username: user.username,
-            name: user.name,
-            weekly_distance: weekly_distance,
-            weekly_time: weekly_time
-        })
-    }
-    response.sort((data1, data2) =>  useTime ? 
-        data2.weekly_time - data1.weekly_time:
-        data2.weekly_distance - data1.weekly_distance
-    )
-    return response
-}
-
-function getStartOfWeek(d) {
-    d = new Date(d);
-    d.setUTCHours(0,0,0,0)
-    var day = d.getDay(),
-        diff = d.getDate() - day + (day == 0 ? -6:1); // adjust when day is sunday
-    return new Date(d.setDate(diff));
 }
