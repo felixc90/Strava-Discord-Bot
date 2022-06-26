@@ -9,8 +9,8 @@ dotenv.config()
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('update')
-		.setDescription('Updates the weekly stats'),
+		.setName('forceupdate')
+		.setDescription('Updates running data for everyone in the server!'),
         async execute(interaction) {
         await fetch(`${process.env.URL}guild/update`, {
             method: 'put',
@@ -21,7 +21,7 @@ module.exports = {
         })
         // const guild = await Guild.findOne({guild_id: interaction.guild.id})
         // const users = await User.find({discord_id : { $in: guild.members }}, 'username most_recent_run')
-        // return_string = ''
+        return_string = ''
         // time = new Date()
         // for (let i = 0; i < users.length; i++) {
         //     difference_time = time.getTime() - users[i].most_recent_run.time.getTime();
@@ -33,7 +33,7 @@ module.exports = {
         //         await users[i].save()
         //     }
         // }
-        // if (return_string == '') return_string = '⚡️ Stats have been updated! ⚡️'
-        // await interaction.reply({content : return_string})
+        if (return_string == '') return_string = '⚡️ Stats have been updated! ⚡️'
+        await interaction.reply({content : return_string})
         }
 };

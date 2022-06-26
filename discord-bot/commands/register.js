@@ -11,7 +11,6 @@ module.exports = {
 		.setName('register')
 		.setDescription('Generates a link'),
         async execute(interaction) {
-            // console.log(interaction)
             let response = {content: 'User added to guild!', ephemeral: true}
             const findUser = await User.find({discord_id : interaction.user.id})
             const findGuild = await Guild.find({guild_id : interaction.guild.id})

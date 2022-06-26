@@ -1,6 +1,5 @@
 const mongoose = require('mongoose')
 const Run  = require('./Run').schema;
-const Week  = require('./Week').schema;
 
 var schema = mongoose.Schema({
     'strava_id' : String,
@@ -18,10 +17,8 @@ var schema = mongoose.Schema({
         'total_runs' : Number,
         'total_distance' : Number,
         'total_time' : Number,
-        'days_last_active' : Number,
-        'most_recent_run' : { type: mongoose.Schema.Types.ObjectId, ref: 'Run' },
-        'longest_run' : { type: mongoose.Schema.Types.ObjectId, ref: 'Run' },
-        'weekly_data' : [{ type: mongoose.Schema.Types.ObjectId, ref: 'Week' }]
+        'most_recent_run' : String,
+        'runs' : [{ type: mongoose.Schema.Types.ObjectId, ref: 'Run' }]
     },
     
 })
