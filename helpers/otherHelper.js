@@ -7,7 +7,8 @@ const Guild  = require('../models/Guild');
 dotenv.config()
 
 module.exports = {
-    getWeeklyData : getWeeklyData
+    getWeeklyData : getWeeklyData,
+    getStartOfPeriod : getStartOfPeriod
 }
 
 async function getWeeklyData(guild) {
@@ -39,10 +40,14 @@ async function getWeeklyData(guild) {
     return weekly_data
 }
 
-function getStartOfWeek(d) {
+function getStartOfPeriod(d, time_unit) {
     d = new Date(d);
     d.setUTCHours(0,0,0,0)
-    var day = d.getDay(),
-        diff = d.getDate() - day + (day == 0 ? -6:1); // adjust when day is sunday
+    let day = d.getDay()
+    let diff = d.getDate()
+    if (time_unit == "week") {
+        // adjust when day is sunday
+        diff = diff - day + (day == 0 ? -6:1);
+    }
     return new Date(d.setDate(diff));
 }
