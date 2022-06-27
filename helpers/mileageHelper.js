@@ -211,19 +211,16 @@ async function getMileageData(runs, time_unit) {
     let distances = []
     let curr_date = getStartOfPeriod(new Date(), time_unit)
     while (index < active_periods) {
+        dates.push(curr_date)
+        distances.push(0)
         while (curr_date.getTime() == getStartOfPeriod(runs[index].date, time_unit).getTime()) {
             if (dates.length > 0 && curr_date.getTime() == dates[dates.length - 1].getTime()) {
                 distances[distances.length - 1] += runs[index].distance
-            } else {
-                dates.push(curr_date)
-                distances.push(runs[index].distance)
             }
             index += 1
         }
         if (index == active_periods) {break}
         curr_date = getStartOfPeriod(curr_date - 1, time_unit)
-        dates.push(curr_date)
-        distances.push(0)
     }
     // Bug here
     // console.log(distances, dates)
