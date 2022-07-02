@@ -3,7 +3,7 @@ const { ChartJSNodeCanvas } = require('chartjs-node-canvas');
 const { MessageAttachment, MessageEmbed } = require('discord.js');
 const { registerFont } = require("canvas")
 const User = require('../models/User')
-const { getStartOfPeriod } = require('./otherHelper')
+const { getMileageData } = require('./dataHelper')
 
 module.exports = {
     getSingleGraph : getSingleGraph,
@@ -22,6 +22,7 @@ async function getSingleGraph(interaction) {
     }, )
     
     registerFont("./assets/CourierPrime-Regular.ttf", { family: "Courier" })
+    // registerFont("./assets/ShareTechMono-Regular.ttf", { family: "ShareTech" })
 
     const user = await User.findOne({discord_id : interaction.user.id})
     const runs = (await user.statistics.populate({path: 'runs'})).runs
@@ -72,6 +73,7 @@ async function getDoubleGraph(interaction) {
 }
 
 function getConfig(interaction, data1, data2) {
+    let font = 'ShareTech'
     const config = {
         type: 'line',
         data: {
@@ -113,7 +115,7 @@ function getConfig(interaction, data1, data2) {
                 labels : {
                     color: 'white',
                     font: {
-                        family: 'Courier',
+                        family: font,
                         size: 20,
                         weight: '500',
                     }
@@ -127,7 +129,7 @@ function getConfig(interaction, data1, data2) {
                 + ` Mileage (Last ${data1.dates.length} ${interaction.options._subcommand}s)`,
                 font: {
                     size: 30,
-                    family: 'Courier'
+                    family: font
                 },
                 padding: {
                     top: 15,
@@ -144,7 +146,7 @@ function getConfig(interaction, data1, data2) {
                     },
                     color: 'white',
                     font: {
-                        family: 'Courier',
+                        family: font,
                         size: 20,
                         weight: '500',
                     }
@@ -155,7 +157,7 @@ function getConfig(interaction, data1, data2) {
                 ticks: {
                     color: 'white',
                     font: {
-                        family: 'Courier',
+                        family: font,
                         size: 20,
                         weight: '500',
                     }
@@ -185,54 +187,4 @@ function getConfig(interaction, data1, data2) {
         })
     }
     return config
-}
-
-
-async function getNumActivePeriods(runs, time_unit) {
-    let prev_run = {date: new Date()}
-    let num_active_periods = 0;
-    for (const curr_run of runs) {
-        let difference = (getStartOfPeriod(prev_run.date, time_unit) - 
-        getStartOfPeriod(curr_run.date, time_unit)) / (1000 * 3600 * 24)
-        if (time_unit == "week") (difference = difference / 7)
-        if ((time_unit == "day" && difference > 7) ||
-            (time_unit == "week" && difference > 4)) {break}
-        prev_run = curr_run
-        num_active_periods += 1
-    }
-    return num_active_periods
-}
-
-
-async function getMileageData(runs, time_unit) {
-    let active_periods = await getNumActivePeriods(runs, time_unit)
-    let index = 0
-    let dates = []
-    let distances = []
-    let curr_date = getStartOfPeriod(new Date(), time_unit)
-    while (index < active_periods) {
-        dates.push(curr_date)
-        distances.push(0)
-        while (curr_date.getTime() == getStartOfPeriod(runs[index].date, time_unit).getTime()) {
-            if (dates.length > 0 && curr_date.getTime() == dates[dates.length - 1].getTime()) {
-                distances[distances.length - 1] += runs[index].distance
-            }
-            index += 1
-        }
-        if (index == active_periods) {break}
-        curr_date = getStartOfPeriod(curr_date - 1, time_unit)
-    }
-    // Bug here
-    // console.log(distances, dates)
-    while (dates.length < (time_unit == "day" ? 7 :4)) {
-        curr_date = getStartOfPeriod(curr_date - 1, time_unit)
-        dates.push(curr_date)
-        distances.push(0)
-    }
-    dates = dates.map((date) => date.getDate() + '/' + 
-    (date.getMonth() + 1))
-    return {
-        dates: dates,
-        distances, distances
-    }
 }

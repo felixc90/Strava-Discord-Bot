@@ -2,7 +2,7 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
 const User = require('../models/User')
 const Guild = require('../models/Guild')
-const { getWeeklyData } = require('./otherHelper.js')
+const { getWeeklyData } = require('./dataHelper.js')
 
 module.exports = {
     getLeaderboardEmbed : getLeaderboardEmbed,

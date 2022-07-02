@@ -4,7 +4,7 @@ const { MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
 const User = require('../models/User')
 const Guild = require('../models/Guild')
 
-const { getWeeklyData } = require('../helpers/otherHelper.js')
+const { getWeeklyData } = require('../helpers/dataHelper.js')
 const { getLeaderboardEmbed, getMessageRow} = require('../helpers/leaderboardHelper.js')
 
 

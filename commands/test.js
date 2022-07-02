@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const User = require('../models/User')
 const fetch = require('node-fetch');
-const { getStartOfPeriod } = require('../helpers/otherHelper')
+const { getStartOfPeriod } = require('../helpers/dataHelper')
 
 module.exports = {
 	data: new SlashCommandBuilder()
