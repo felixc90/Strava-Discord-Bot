@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 const Guild = require('../models/Guild')
-const { updateUsers } = require('../helpers/updateHelper')
-const { getLeaderboardEmbed, getMessageRow } = require('../helpers/leaderboardHelper')
+const { updateUsers } = require('../utils/update')
+const { getLeaderboardEmbed, getMessageRow } = require('../utils/leaderboard')
 
 
 module.exports = {

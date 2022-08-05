@@ -1,9 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const fetch = require('node-fetch');
 const dotenv = require('dotenv');
-const User = require('../models/User');
-const Guild = require('../models/Guild');
-const { updateUsers } = require('../helpers/updateHelper')
+const { updateUsers } = require('../utils/update')
 
 dotenv.config()
 

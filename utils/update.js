@@ -9,15 +9,13 @@ dotenv.config()
 const auth_link = "https://www.strava.com/oauth/token"
 
 module.exports = {
-    updateUsers : updateUsers
-}
-
-async function updateUsers(guild_id) {
-    console.log('Updating Users...')
-    const guild = await Guild.findOne({guild_id: guild_id})
-    const users = await User.find({discord_id : { $in: guild.members } })
-    for (const user of users) {
-        reAuthorize(user)
+    updateUsers : async function updateUsers(guild_id) {
+        console.log('Updating Users...')
+        const guild = await Guild.findOne({guild_id: guild_id})
+        const users = await User.find({discord_id : { $in: guild.members } })
+        for (const user of users) {
+            reAuthorize(user)
+        }
     }
 }
 
@@ -59,7 +57,7 @@ async function getActivities(res, user) {
                     'name' : activity.name,
                     'start_latlng' : activity.start_latlng,
                     'end_latlng' : activity.end_latlng,
-                    'date' : activity.start_date,
+                    'date' : activity.start_date_local,
                     'time' : activity.moving_time / 60,
                     'distance' : activity.distance / 1000,
                     'summary_polyline' : activity.map.summary_polyline,

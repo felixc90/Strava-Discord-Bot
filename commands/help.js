@@ -17,7 +17,6 @@ module.exports = {
                 {'name' : '🎉  Display Leaderboard - `/leaderboard`',
                 'value': 'Displays the weekly Strava leaderboard based on time or distance.', 'inline': false},
                 {'name' : '⚡️ Force Update - `/update`', 'value': 'Updates the weekly statistics.', 'inline': false},
-                {'name' : '🚩 Flag - `/flag`', 'value': 'Shows various points of interest (flags) to user.', 'inline': false}
             )
         await interaction.reply({embeds : [helpEmbed]})
         }

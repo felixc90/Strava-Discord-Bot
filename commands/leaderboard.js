@@ -1,11 +1,10 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
 
 const User = require('../models/User')
 const Guild = require('../models/Guild')
 
-const { getWeeklyData } = require('../helpers/dataHelper.js')
-const { getLeaderboardEmbed, getMessageRow} = require('../helpers/leaderboardHelper.js')
+const { getRunData } = require('../utils/helper.js')
+const { getLeaderboardEmbed, getMessageRow } = require('../util/leaderboard.js')
 
 
 module.exports = {

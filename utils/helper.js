@@ -7,40 +7,10 @@ const Guild  = require('../models/Guild');
 dotenv.config()
 
 module.exports = {
-    getWeeklyData : getWeeklyData,
     getStartOfPeriod : getStartOfPeriod,
     getNumActivePeriods : getNumActivePeriods,
-    getMileageData : getMileageData,
+    getRunData : getRunData,
     toPace : toPace
-}
-
-async function getWeeklyData(guild) {
-    const weekly_data = []
-    for (const member_id of guild.members) {
-        let weekly_distance = 0;
-        let weekly_time = 0;
-        const user = await User.findOne({discord_id: member_id})
-        const runs = (await user.statistics.populate({path: 'runs'})).runs
-        const today = new Date()
-        for (const run of runs) {
-            if (run.date < getStartOfPeriod(new Date()), "week") {
-                break
-            }
-            weekly_distance += run.distance
-            weekly_time += run.time
-        }
-        weekly_data.push({
-            username: user.username,
-            name: user.name,
-            weekly_distance: weekly_distance,
-            weekly_time: weekly_time
-        })
-    }
-    weekly_data.sort((data1, data2) =>  useTime ? 
-        data2.weekly_time - data1.weekly_time:
-        data2.weekly_distance - data1.weekly_distance
-    )
-    return weekly_data
 }
 
 async function getNumActivePeriods(runs, time_unit) {
@@ -59,13 +29,20 @@ async function getNumActivePeriods(runs, time_unit) {
 }
 
 
-async function getMileageData(runs, time_unit) {
-    let active_periods = await getNumActivePeriods(runs, time_unit)
+async function getRunData(user_id, time_unit, active_periods) {
+    const user = await User.findOne({discord_id : user_id})
+    const runs = (await user.statistics.populate({path: 'runs'})).runs
+    let num_active_periods = await getNumActivePeriods(runs, time_unit)
+    if (active_periods < 0 || active_periods > num_active_periods) {
+        active_periods = num_active_periods
+    }
     let index = 0
     let dates = []
     let times = []
     let distances = []
     let curr_date = getStartOfPeriod(new Date(), time_unit)
+    // Not local time
+    console.log(new Date())
     while (index < active_periods) {
         dates.push(curr_date)
         distances.push(0)
@@ -76,12 +53,15 @@ async function getMileageData(runs, time_unit) {
                 times[times.length - 1] += runs[index].time
             }
             index += 1
+            if (index == active_periods) {
+                break
+            }
         }
-        if (index == active_periods) {break}
+        if (index == active_periods) {
+            break
+        }
         curr_date = getStartOfPeriod(curr_date - 1, time_unit)
     }
-    // Bug here
-    // console.log(distances, dates)
     while (dates.length < (time_unit == "day" ? 7 :4)) {
         curr_date = getStartOfPeriod(curr_date - 1, time_unit)
         dates.push(curr_date)
@@ -97,12 +77,12 @@ async function getMileageData(runs, time_unit) {
     }
 }
 
-function getStartOfPeriod(d, time_unit) {
+function getStartOfPeriod(d, unit_of_time) {
     d = new Date(d);
     d.setUTCHours(0,0,0,0)
     let day = d.getDay()
     let diff = d.getDate()
-    if (time_unit == "week") {
+    if (unit_of_time == "week") {
         // adjust when day is sunday
         diff = diff - day + (day == 0 ? -6:1);
     }
@@ -114,3 +94,4 @@ function toPace(speed) {
     var sec = Math.floor((Math.abs(speed) * 60) % 60);
     return min + ":" + (sec < 10 ? "0" : "") + sec;
 }
+        
