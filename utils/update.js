@@ -82,11 +82,11 @@ async function updateGuildUser(guild, user) {
     const logEntries = []
     for (const run of runs) {
         if (run.id == guildUser.mostRecentRunId) break
-        console.log("not")
         logEntries.push({
-            'name' : `+ ${parseInt(run.time)}`,
-            'value' : `Run on ${run.date.toDateString()}`,
-            'inline' : false
+            'logType' : "run",
+            'value' : parseInt(run.time),
+            'dateStart' : run.date,
+            'dateEnd' : new Date()
         })
         guildUser.totalExp += run.time;
     }
@@ -94,6 +94,7 @@ async function updateGuildUser(guild, user) {
     guildUser.mostRecentRunId = runs[0].id
     logEntries.reverse()
     for (const logEntry of logEntries) {
+
         guildUser.logEntries.unshift(logEntry);
     }
     await guild.save()

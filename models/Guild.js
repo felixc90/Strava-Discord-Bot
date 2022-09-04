@@ -6,12 +6,12 @@ var schema = mongoose.Schema({
         'id' : String,
         'joinedAt' : Date,
         'totalExp' : Number,
-        'modifiers' : [String],
         'mostRecentRunId' : String,
         'logEntries' : [{
-            'name' : String,
-            'value' : String,
-            'inline' : Boolean
+            'logType' : String,
+            'value' : Number,
+            'dateStart' : Date,
+            'dateEnd' : Date
         }]
     }],
 })

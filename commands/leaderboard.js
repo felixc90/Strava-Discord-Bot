@@ -11,19 +11,17 @@ dotenv.config()
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('log')
-		.setDescription('Updates running data for everyone in the server!'),
+		.setName('leaderboard')
+		.setDescription('Displays the weekly leaderboard!'),
         async execute(interaction) {
             await updateUsers(interaction.guild.id)
-            const fields = await getFields("log", interaction.user.id, interaction.guild.id)
+            const fields = await getFields("leaderboard", interaction.user.id, interaction.guild.id)
             const user = await User.findOne({discordId: interaction.user.id}, 'name');
-            // await interaction.reply({ content : "los"})
-            const title = `${user.name}'s Running Log`;
+            const title = `Weekly Leaderboard`;
             const description = "something";
-            reply = {
+            fields = [{'name' : 'name', 'value' : 'value', 'inline' : false}]
+            await interaction.reply({ 
                 embeds: [await getMessageEmbed(title, description, fields, 1)], 
-            }
-            if (fields.length > 5) reply.components = [await getMessageRow(fields, 1)]
-            await interaction.reply(reply)
+                components: [await getMessageRow(fields, 1)]})
         }
 };

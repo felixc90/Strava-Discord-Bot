@@ -22,7 +22,6 @@ async function togglePage(interaction, fields) {
 }
 
 function getMessageEmbed(title, description, fields, pageNumber) {
-    console.log(title, description)
     return new MessageEmbed()
         .setColor('#05CBE1')
         .setTitle(title)
