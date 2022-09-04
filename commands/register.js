@@ -21,7 +21,7 @@ module.exports = {
                 `/${interaction.guild.id}` +
                 `/${interaction.user.id}` + 
                 `/${interaction.user.username}` + 
-                '&approval_prompt=force&scope=activity:read'
+                '&approval_prompt=force&scope=activity:write,activity:read'
                 const row = new MessageActionRow()
                 .addComponents(
                     new MessageButton()

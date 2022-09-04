@@ -2,9 +2,12 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 
 const User = require('../models/User')
 const Guild = require('../models/Guild')
+const { MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
+const { getTimeGraph } = require('../utils/graph')
+const { getLeaderboardEmbed, getMessageRow } = require('../utils/leaderboard')
+const { getRunData, getStartOfPeriod, getNumActivePeriod } = require('../utils/helper')
 
-const { getRunData } = require('../utils/helper.js')
-const { getLeaderboardEmbed, getMessageRow } = require('../util/leaderboard.js')
+const { createMetricStrategy } = require('../utils/metricStrategyFactory.js')
 
 
 module.exports = {
@@ -13,13 +16,13 @@ module.exports = {
 		.setDescription('Displays the weekly Strava leaderboard!'),
         async execute(interaction) {
             const guild = await Guild.findOne({guild_id: interaction.guild.id})
+            guild.page_num = 1;
+            console.log(guild.metric)
+            metricStrategy = createMetricStrategy(guild.metric)
             console.log(guild)
-            if (guild.page_num == 2) {
-                guild.page_num = 1;
-                guild.save()
-            }
-            const leaderboardEmbed = await getLeaderboardEmbed(guild)
-            const leaderboardMessageRow = getMessageRow(guild)
+            const leaderboardEmbed = await getLeaderboardEmbed(guild, metricStrategy)
+            const leaderboardMessageRow = getMessageRow(guild, metricStrategy)
+            guild.save()
             await interaction.reply({ embeds: [leaderboardEmbed], 
                 components: [leaderboardMessageRow]})
         },

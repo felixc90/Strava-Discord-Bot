@@ -23,22 +23,33 @@ module.exports = {
 }
 
 function getConfig(data) {
+    background_colours = [
+        function (context) {
+            const gradient = context.chart.ctx.createLinearGradient(600, 0, 600, 800);
+            gradient.addColorStop(0, 'rgba(0, 231, 255, 0.9)')
+            gradient.addColorStop(0.5, 'rgba(0, 231, 255, 0.25)');
+            gradient.addColorStop(1, 'rgba(0, 231, 255, 0)');
+            return gradient;
+        },
+        function (context) {
+            const gradient = context.chart.ctx.createLinearGradient(600, 0, 600, 800);
+            gradient.addColorStop(0, 'rgba(255, 0,0, 0.5)')
+            gradient.addColorStop(0.5, 'rgba(255, 0, 0, 0.25)');
+            gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+            return gradient;
+        },
+    ]
     let font = 'ShareTech'
     const config = {
         type: 'line',
         data: {
             labels: data.labels,
-            datasets: data.datasets.map(dataset => {
+            datasets: [...Array(data.datasets.length).keys()].map(i => {
+                    dataset = data.datasets[i]
                     return {
                             label: dataset.username,
                             data: dataset.data,
-                            backgroundColor: function (context) {
-                                const gradient = context.chart.ctx.createLinearGradient(600, 0, 600, 800);
-                                gradient.addColorStop(0, 'rgba(0, 231, 255, 0.9)')
-                                gradient.addColorStop(0.5, 'rgba(0, 231, 255, 0.25)');
-                                gradient.addColorStop(1, 'rgba(0, 231, 255, 0)');
-                                return gradient;
-                            },
+                            backgroundColor: background_colours[i],
                             borderWidth: 1,
                             pointBackgroundColor: 'white',
                             pointBorderColor: 'white',
@@ -47,7 +58,7 @@ function getConfig(data) {
                             cubicInterpolationMode: 'monotone',
                             tension: 0.2,
                     }
-                }),
+        }),
             
         },
         options: {
@@ -74,7 +85,7 @@ function getConfig(data) {
             title: {
                 display: true,
                 text: data.datasets.map(dataset => dataset.username).join(' v ') + 
-                ` Mileage (Last ${data.labels.length} ${data.unit_of_time}s)`,
+                ` Mileage (Last ${data.labels.length} ${data.time_unit}s)`,
                 font: {
                     size: 30,
                     family: font

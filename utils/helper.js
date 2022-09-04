@@ -33,29 +33,30 @@ async function getRunData(user_id, time_unit, active_periods) {
     const user = await User.findOne({discord_id : user_id})
     const runs = (await user.statistics.populate({path: 'runs'})).runs
     let num_active_periods = await getNumActivePeriods(runs, time_unit)
+    console.log(num_active_periods);
     if (active_periods < 0 || active_periods > num_active_periods) {
         active_periods = num_active_periods
     }
     let index = 0
     let dates = []
-    let times = []
-    let distances = []
+    let runData = []
     let curr_date = getStartOfPeriod(new Date(), time_unit)
     // Not local time
-    console.log(new Date())
     while (index < active_periods) {
         dates.push(curr_date)
-        distances.push(0)
-        times.push(0)
+        runData.push(0)
+        console.log(curr_date)
+        console.log(getStartOfPeriod(runs[index].date, time_unit))
         while (curr_date.getTime() == getStartOfPeriod(runs[index].date, time_unit).getTime()) {
             if (dates.length > 0 && curr_date.getTime() == dates[dates.length - 1].getTime()) {
-                distances[distances.length - 1] += runs[index].distance
-                times[times.length - 1] += runs[index].time
+                // to be changed
+                runData[runData.length - 1] += runs[index].distance
             }
             index += 1
             if (index == active_periods) {
                 break
             }
+            
         }
         if (index == active_periods) {
             break
@@ -65,15 +66,13 @@ async function getRunData(user_id, time_unit, active_periods) {
     while (dates.length < (time_unit == "day" ? 7 :4)) {
         curr_date = getStartOfPeriod(curr_date - 1, time_unit)
         dates.push(curr_date)
-        distances.push(0)
-        times.push(0)
+        runData.push(0)
     }
     dates = dates.map((date) => date.getDate() + '/' + 
     (date.getMonth() + 1))
     return {
         dates: dates,
-        distances : distances,
-        times : times,
+        runData : runData,
     }
 }
 

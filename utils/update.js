@@ -10,17 +10,19 @@ const auth_link = "https://www.strava.com/oauth/token"
 
 module.exports = {
     updateUsers : async function updateUsers(guild_id) {
-        console.log('Updating Users...')
         const guild = await Guild.findOne({guild_id: guild_id})
         const users = await User.find({discord_id : { $in: guild.members } })
         for (const user of users) {
-            reAuthorize(user)
+            const access_token = await reAuthorize(user)
+            await getActivities(access_token, user)
         }
-    }
+    },
+
+    reAuthorize : reAuthorize
 }
 
 async function reAuthorize(user) {
-    await fetch(auth_link, {
+    return await fetch(auth_link, {
         method: 'post',
         headers: {
             'Accept': 'application/json, text/plain, */*',
@@ -34,22 +36,23 @@ async function reAuthorize(user) {
         })
 
     }).then(res => res.json())
-        .then(res => getActivities(res, user))
+    .then(json => json.access_token)
 }
 
-async function getActivities(res, user) {
-    const activities_link = `https://www.strava.com/api/v3/athlete/activities?access_token=${res.access_token}`
+async function getActivities(access_token, user) {
+    const activities_link = `https://www.strava.com/api/v3/athlete/activities?access_token=${access_token}`
     await fetch(activities_link)
         .then((res) => res.json())
         .then(async (data) => 
         {   
             const new_runs = []
-            if (data.length == 0) return
+            console.log(data)
+            if (data.length == 0) r
+            eturn
             for (const activity of data) {
                 if (activity.type != "Run") continue
                 if (user.statistics.runs.length != 0 &&
                     user.statistics.most_recent_run == activity.id) {
-                    console.log('Already added run with this id.')
                     break
                 }
                 const new_run = new Run({
