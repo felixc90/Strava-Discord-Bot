@@ -43,7 +43,15 @@ function authoriseUser(params, code) {
             })
 
             let guild = await Guild.findOne({guildId : params.guildId})
-            if (!guild.members.includes(user.discordId)) guild.members.push(user.discordId)
+            if (!guild.members.map(member => member.id).includes(interaction.user.id)) 
+            guild.members.push({
+                'id' : user.discordId,
+                'joinedAt' : new Date(),
+                'totalExp' : 0,
+                'modifiers' : [],
+                'mostRecentRunId' : -1,
+                'logEntries' : []
+            })
             await guild.save()
             await user.save()
             console.log('User added to Achilles!')

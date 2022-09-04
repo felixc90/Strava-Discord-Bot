@@ -12,16 +12,23 @@ module.exports = {
 		.setDescription('Generates a link to register your Strava account to Achilles'),
         async execute(interaction) {
             let response = {content: 'User added to guild!', ephemeral: true}
-            const user = await User.findOne({discordId : interaction.user.id})
+            const user = (await User.findOne({discordId : interaction.user.id}))
             const guild = await Guild.findOne({guildId : interaction.guild.id})
 
             if (user != null) {
-                if (guild.members.includes(interaction.user.id)) {
-                    await interaction.reply({content: 'User already in guild!', ephemeral: true})
-                } else {
-                    guild.members.push(interaction.user.id)
+                if (!guild.members.map(member => member.id).includes(interaction.user.id)) {
+                    guild.members.push({
+                        'id' : user.discordId,
+                        'joinedAt' : new Date(),
+                        'totalExp' : 0,
+                        'modifiers' : [],
+                        'mostRecentRunId' : -1,
+                        'logEntries' : []
+                    })
                     await guild.save()
                     await interaction.reply({content: 'User added to guild!', ephemeral: true})
+                } else {
+                    await interaction.reply({content: 'User already in guild!', ephemeral: true})
                 }
                 return;
             }

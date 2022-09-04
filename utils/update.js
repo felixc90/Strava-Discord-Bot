@@ -35,10 +35,11 @@ async function reAuthorize(refreshToken) {
 
 async function updateUsers(guildId) {
     const guild = await Guild.findOne({guildId: guildId})
-    const users = await User.find({discordId : { $in: guild.members } })
+    const users = await User.find({discordId : { $in: guild.members.map(member => member.id) } })
     for (const user of users) {
         const accessToken = await reAuthorize(user.refreshToken);
         await getActivities(accessToken, user)
+        await updateGuildUser(guild, user);
     }
 }
 
@@ -73,4 +74,27 @@ async function getActivities(accessToken, user) {
             }
             user.save()
         })
+}
+
+async function updateGuildUser(guild, user) {
+    const runs = (await user.populate({path: 'runs'})).runs
+    const guildUser = guild.members.find(member => member.id == user.discordId)
+    const logEntries = []
+    for (const run of runs) {
+        if (run.id == guildUser.mostRecentRunId) break
+        console.log("not")
+        logEntries.push({
+            'name' : `+ ${parseInt(run.time)}`,
+            'value' : `Run on ${run.date.toDateString()}`,
+            'inline' : false
+        })
+        guildUser.totalExp += run.time;
+    }
+    if (logEntries.length == 0) return
+    guildUser.mostRecentRunId = runs[0].id
+    logEntries.reverse()
+    for (const logEntry of logEntries) {
+        guildUser.logEntries.unshift(logEntry);
+    }
+    await guild.save()
 }

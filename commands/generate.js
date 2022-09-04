@@ -1,7 +1,7 @@
-const { getRunData, getStartOfPeriod, getNumActivePeriod } = require('../utils/helper')
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const fetch = require('node-fetch');
 const User = require('../models/User')
+const { getStartOfPeriod } = require('../utils/helper')
 const { reAuthorize } = require('../utils/update')
 module.exports = {
 	data: new SlashCommandBuilder()

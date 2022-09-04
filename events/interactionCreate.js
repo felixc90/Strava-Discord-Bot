@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
-const Guild = require('../models/Guild')
-const { updateUsers } = require('../utils/update')
-// const { getLeaderboardEmbed, getMessageRow } = require('../utils/leaderboard')
+const User = require('../models/User')
+const { togglePage } = require('../utils/pages')
+const { getFields } = require('../utils/fields')
 // const { createMetricStrategy } = require('../utils/metricStrategyFactory.js')
 
 module.exports = {
@@ -18,17 +18,16 @@ module.exports = {
                 await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
             }
         } 
-        // else if (interaction.isButton()) {
-        //     const guild = await Guild.findOne({guild_id: interaction.guild.id})
-        //     if (interaction.customId == 'toggle-key') {
-        //         guild.metric = createMetricStrategy(guild.metric).nextMetric()
-        //     } else if (interaction.customId == 'next-page') {
-        //         guild.page_num = 3 - guild.page_num
-        //     }
-        //     await guild.save()
-        //     const leaderboardEmbed = await getLeaderboardEmbed(guild, createMetricStrategy(guild.metric))
-        //     const leaderboardRow = getMessageRow(guild, createMetricStrategy(guild.metric))
-        //     await interaction.reply({ embeds: [leaderboardEmbed], components: [leaderboardRow]})
-        // }
+        else if (interaction.isButton()) {
+            if (interaction.customId.includes("page")) {
+                fields = await getFields(interaction.message.embeds[0].title.split(" ")
+                [interaction.message.embeds[0].title.split(" ").length - 1].toLowerCase(), 
+                interaction.user.id, interaction.guild.id)
+                response = await togglePage(interaction, fields)
+                await interaction.reply({ 
+                    embeds: [response.replyMessageEmbed], 
+                    components: [response.replyMessageRow]})
+            }
+        }
 	}
 };
