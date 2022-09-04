@@ -9,26 +9,16 @@ dotenv.config()
 module.exports = {
 	name: 'guildCreate',
 	once: true,
-	async execute(client) {
-		console.log("Joined a new guild");
-        const guilds = client.guilds.cache.map(guild => guild.id);
-        const guildId = guilds[guilds.length - 1]
+	async execute(client, guild) {
+		console.log(`Joined ${guild.name}`);
 
-        // Check if the guild already exists. If so, don't add to database
-        const findGuild = await Guild.findOne({guildId: parseInt(guildId)})
-        if (findGuild != null) {
-            console.log('Guild already exists!')
-            return
-        }
         // Add all users who were previously in the discord server
-        let users = await User.find({ guilds: guildId } , 'discord_id')
-        users = users.map(user => user.discord_id)
-        const guild = new Guild({
-            'guildId' : guildId,
-            'members' : users,
-            'metric' : "distance",
-            'pageNumber' : 1,
+        let users = await User.find({ guilds: guild.id } , 'discordId')
+        const newGuild = new Guild({
+            'guildId' : guild.id,
+            'members' : users.map(user => user.discordId),
+            'pageNumber' : 1
         })
-        await guild.save()
+        await newGuild.save()
 	},
 };

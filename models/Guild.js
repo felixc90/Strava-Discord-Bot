@@ -3,7 +3,6 @@ const mongoose = require('mongoose')
 var schema = mongoose.Schema({
     'guildId' : String,
     'members' : [String],
-    'metric' : String,
     'pageNumber' : Number,
 })
 

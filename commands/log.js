@@ -7,7 +7,7 @@ dotenv.config()
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('update')
+		.setName('log')
 		.setDescription('Updates running data for everyone in the server!'),
         async execute(interaction) {
             await updateUsers(interaction.guild.id)

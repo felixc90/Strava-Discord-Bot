@@ -13,7 +13,7 @@ exports.register = async (req, res) => {
     res.send({message: "New user authorised!"});
 }
 
-function authoriseUser(discord_data, code) {
+function authoriseUser(discordData, code) {
     fetch(auth_link,{
         method: 'post',
         headers: {
@@ -30,17 +30,13 @@ function authoriseUser(discord_data, code) {
         .then(async data => {
             console.log('Adding new user...')
             const user = new User({
-                'strava_id' : data.athlete.id,
-                'discord_id' : discord_data.user_id,
-                'refresh_token' : data.refresh_token,
+                'stravaId' : data.athlete.id,
+                'discordId' : discord_data.user_id,
+                'refreshToken' : data.refresh_token,
                 'name' : `${data.athlete.firstname} ${data.athlete.lastname}`,
                 'username' : discord_data.username,
                 'profile' : data.athlete.profile,
                 'guilds' : [discord_data.guild_id],
-                'sex' : data.athlete.sex,
-                'region' : data.athlete.city + data.athlete.state + data.athlete.country,
-                'created_at' :data.athlete.created_at,
-                'joined_at' : new Date(),
                 'statistics' : {
                     'total_runs' : 0,
                     'total_distance' : 0,
@@ -50,7 +46,7 @@ function authoriseUser(discord_data, code) {
                 },
             })
 
-            let guild = await Guild.findOne({guild_id : discord_data.guild_id})
+            let guild = await Guild.findOne({guildId : discord_data.guild_id})
             if (!guild.members.includes(user.discord_id)) guild.members.push(user.discord_id)
             await guild.save()
             await user.save()

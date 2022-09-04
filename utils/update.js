@@ -9,19 +9,12 @@ dotenv.config()
 const auth_link = "https://www.strava.com/oauth/token"
 
 module.exports = {
-    updateUsers : async function updateUsers(guild_id) {
-        const guild = await Guild.findOne({guild_id: guild_id})
-        const users = await User.find({discord_id : { $in: guild.members } })
-        for (const user of users) {
-            const access_token = await reAuthorize(user)
-            await getActivities(access_token, user)
-        }
-    },
-
+    updateUsers : updateUsers,
     reAuthorize : reAuthorize
 }
 
-async function reAuthorize(user) {
+// Returns an access token for the given refresh token
+async function reAuthorize(refresh_token) {
     return await fetch(auth_link, {
         method: 'post',
         headers: {
@@ -31,12 +24,22 @@ async function reAuthorize(user) {
         body: JSON.stringify({
             client_id: '71610',
             client_secret: process.env.STRAVA_CLIENT_SECRET,
-            refresh_token: user.refresh_token,
+            refresh_token: refresh_token,
             grant_type: 'refresh_token'
         })
 
     }).then(res => res.json())
     .then(json => json.access_token)
+}
+
+
+async function updateUsers(guildId) {
+    const guild = await Guild.findOne({guildId: guildId})
+    const users = await User.find({discordId : { $in: guild.members } })
+    for (const user of users) {
+        const accessToken = await reAuthorize(user.refresh_token);
+        await getActivities(accessToken, user)
+    }
 }
 
 async function getActivities(access_token, user) {
@@ -46,9 +49,7 @@ async function getActivities(access_token, user) {
         .then(async (data) => 
         {   
             const new_runs = []
-            console.log(data)
-            if (data.length == 0) r
-            eturn
+            if (data.length == 0) return
             for (const activity of data) {
                 if (activity.type != "Run") continue
                 if (user.statistics.runs.length != 0 &&
