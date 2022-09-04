@@ -8,13 +8,9 @@ var schema = mongoose.Schema({
     'name' : String,
     'username' : String,
     'profile' : String,
-    'statistics' : {
-        'totalRuns' : Number,
-        'totalDistance' : Number,
-        'totalTime' : Number,
-        'most_recent_run' : String,
-        'runs' : [{ type: mongoose.Schema.Types.ObjectId, ref: 'Run' }]
-    },
-    
+    'totalRuns' : Number,
+    'totalDistance' : Number,
+    'totalTime' : Number,
+    'runs' : [{ type: mongoose.Schema.Types.ObjectId, ref: 'Run' }]
 })
 module.exports = mongoose.model("User", schema)

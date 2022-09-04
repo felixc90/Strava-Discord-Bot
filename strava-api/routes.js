@@ -3,6 +3,6 @@ const router  = express.Router();
 
 const controller = require('./controller.js');
 
-router.get("/register/:guild_id/:user_id/:username", controller.register);
+router.get("/register/:guildId/:userId/:username", controller.register);
 
 module.exports = router

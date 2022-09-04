@@ -9,38 +9,37 @@ dotenv.config()
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('register')
-		.setDescription('Generates a link'),
+		.setDescription('Generates a link to register your Strava account to Achilles'),
         async execute(interaction) {
             let response = {content: 'User added to guild!', ephemeral: true}
-            const user = await User.findOne({discord_id : interaction.user.id})
-            const guild = await Guild.findOne({guild_id : interaction.guild.id})
-            if (user == null) {
-                let url = 'https://www.strava.com/oauth/authorize?client_id=71610' + 
-                '&response_type=code&redirect_uri=' +
-                `${process.env.URL}user/register` + 
-                `/${interaction.guild.id}` +
-                `/${interaction.user.id}` + 
-                `/${interaction.user.username}` + 
-                '&approval_prompt=force&scope=activity:write,activity:read'
-                const row = new MessageActionRow()
-                .addComponents(
-                    new MessageButton()
-                    .setLabel('here!')
-                    .setStyle('LINK')
-                    .setURL(url),
-                    );
-                response = {content:'Add yourself', components: [row], ephemeral: true}
-            } else {
+            const user = await User.findOne({discordId : interaction.user.id})
+            const guild = await Guild.findOne({guildId : interaction.guild.id})
+
+            if (user != null) {
                 if (guild.members.includes(interaction.user.id)) {
-                    response = {content: 'User already in guild!', ephemeral: true}
+                    await interaction.reply({content: 'User already in guild!', ephemeral: true})
                 } else {
-                    user.guilds.push(interaction.guild.id)
                     guild.members.push(interaction.user.id)
-                    await user.save()
                     await guild.save()
+                    await interaction.reply({content: 'User added to guild!', ephemeral: true})
                 }
+                return;
             }
 
-        await interaction.reply(response)
+            let url = 'https://www.strava.com/oauth/authorize?client_id=71610' + 
+            '&response_type=code&redirect_uri=' +
+            `${process.env.URL}user/register` + 
+            `/${interaction.guild.id}` +
+            `/${interaction.user.id}` + 
+            `/${interaction.user.username}` + 
+            '&approval_prompt=force&scope=activity:write,activity:read'
+            const row = new MessageActionRow()
+            .addComponents(
+                new MessageButton()
+                .setLabel('Click here!')
+                .setStyle('LINK')
+                .setURL(url),
+                );
+            await interaction.reply({content:'Register your Strava account with Achilles', components: [row], ephemeral: true})
         }
 };

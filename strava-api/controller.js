@@ -5,7 +5,7 @@ const User  = require('../models/User');
 
 dotenv.config()
 
-const auth_link = "https://www.strava.com/oauth/token"
+const authLink = "https://www.strava.com/oauth/token"
 
 exports.register = async (req, res) => {
     const code = req.query.code;
@@ -13,8 +13,8 @@ exports.register = async (req, res) => {
     res.send({message: "New user authorised!"});
 }
 
-function authoriseUser(discordData, code) {
-    fetch(auth_link,{
+function authoriseUser(params, code) {
+    fetch(authLink, {
         method: 'post',
         headers: {
             'Accept': 'application/json, text/plain, */*',
@@ -31,26 +31,22 @@ function authoriseUser(discordData, code) {
             console.log('Adding new user...')
             const user = new User({
                 'stravaId' : data.athlete.id,
-                'discordId' : discord_data.user_id,
+                'discordId' : params.userId,
                 'refreshToken' : data.refresh_token,
                 'name' : `${data.athlete.firstname} ${data.athlete.lastname}`,
-                'username' : discord_data.username,
+                'username' : params.username,
                 'profile' : data.athlete.profile,
-                'guilds' : [discord_data.guild_id],
-                'statistics' : {
-                    'total_runs' : 0,
-                    'total_distance' : 0,
-                    'total_time' : 0,
-                    'most_recent_run' : "-1",
-                    'runs' : []
-                },
+                'totalRuns' : 0,
+                'totalDistance' : 0,
+                'totalTime' : 0,
+                'runs' : []
             })
 
-            let guild = await Guild.findOne({guildId : discord_data.guild_id})
-            if (!guild.members.includes(user.discord_id)) guild.members.push(user.discord_id)
+            let guild = await Guild.findOne({guildId : params.guildId})
+            if (!guild.members.includes(user.discordId)) guild.members.push(user.discordId)
             await guild.save()
             await user.save()
-            console.log('User added!')
+            console.log('User added to Achilles!')
             }
         )
 }
