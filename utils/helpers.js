@@ -7,7 +7,7 @@ const Guild  = require('../models/Guild');
 dotenv.config()
 
 module.exports = {
-    getStartOfPeriod : getStartOfPeriod,
+    getStartOfWeek : getStartOfWeek,
     getNumActivePeriods : getNumActivePeriods,
     getRunData : getRunData,
     toPace : toPace
@@ -76,17 +76,16 @@ async function getRunData(user_id, time_unit, active_periods) {
     }
 }
 
-function getStartOfPeriod(d, unit_of_time) {
-    d = new Date(d);
-    d.setUTCHours(0,0,0,0)
-    let day = d.getDay()
-    let diff = d.getDate()
-    if (unit_of_time == "week") {
-        // adjust when day is sunday
-        diff = diff - day + (day == 0 ? -6:1);
-    }
-    return new Date(d.setDate(diff));
+function getStartOfWeek() {
+  d = new Date();
+  d.setUTCHours(0,0,0,0)
+  let day = d.getDay()
+  let diff = d.getDate()
+  diff = diff - day + (day == 0 ? -6:1);
+  return new Date(d.setDate(diff));
 }
+
+
 
 function toPace(speed) {
     var min = Math.floor(Math.abs(speed));

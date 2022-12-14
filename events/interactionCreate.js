@@ -1,7 +1,5 @@
 const fetch = require('node-fetch');
 const User = require('../models/User')
-const { togglePage } = require('../utils/pages')
-const { getFields } = require('../utils/fields')
 
 module.exports = {
 	name: 'interactionCreate',
@@ -19,16 +17,16 @@ module.exports = {
       }
     // handle button click
     } else if (interaction.isButton()) {
-        if (interaction.customId.includes("page")) {
-          console.log(interaction)
-          fields = await getFields(interaction.message.embeds[0].title.split(" ")
-          [interaction.message.embeds[0].title.split(" ").length - 1].toLowerCase(), 
-          interaction.user.id, interaction.guild.id)
-          response = await togglePage(interaction, fields)
-          await interaction.reply({ 
-              embeds: [response.replyMessageEmbed], 
-              components: [response.replyMessageRow]})
-        }
+        // if (interaction.customId.includes("page")) {
+        //   console.log(interaction)
+        //   fields = await getFields(interaction.message.embeds[0].title.split(" ")
+        //   [interaction.message.embeds[0].title.split(" ").length - 1].toLowerCase(), 
+        //   interaction.user.id, interaction.guild.id)
+        //   response = await togglePage(interaction, fields)
+        //   await interaction.reply({ 
+        //       embeds: [response.replyMessageEmbed], 
+        //       components: [response.replyMessageRow]})
+        // }
     }
 	}
 };

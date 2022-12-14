@@ -2,6 +2,7 @@ const fetch = require('node-fetch');
 const dotenv = require('dotenv');
 const Guild  = require('../models/Guild');
 const User  = require('../models/User');
+const { getStartOfWeek } = require('../utils/helpers')
 
 dotenv.config()
 
@@ -64,13 +65,4 @@ function authoriseUser(params, code) {
       console.log(`${params.username} added to Achilles!`)
     }
   )
-}
-
-function getStartOfWeek() {
-  d = new Date();
-  d.setUTCHours(0,0,0,0)
-  let day = d.getDay()
-  let diff = d.getDate()
-  diff = diff - day + (day == 0 ? -6:1);
-  return new Date(d.setDate(diff));
 }

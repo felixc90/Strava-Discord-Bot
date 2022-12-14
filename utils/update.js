@@ -21,11 +21,11 @@ async function updateUsers(guildId) {
     const accessToken = await reAuthorize(user.refreshToken);
     const newRuns = []
     await getActivities(newRuns, accessToken, user.lastUpdated, 1);
-    console.log(newRuns)
+    console.log(user.runs.length)
     user.runs = [...newRuns, ...user.runs];
+    console.log(user.runs.length)
     user.lastUpdated = new Date();
-    // await user.save();
-    // await updateGuildUser(guild, user);
+    await user.save();
   }
 }
 
@@ -72,6 +72,7 @@ async function getActivities(newRuns, accessToken, lastUpdated, page) {
       newRun.save()
       newRuns.unshift(newRun)
     }
+    // recursively fetch activities
     await getActivities(newRuns, accessToken, lastUpdated, page + 1)
   })
 }
