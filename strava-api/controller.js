@@ -34,21 +34,22 @@ function authoriseUser(params, code) {
     .then(async data => {
       // create new user
       const user = new User({
-          'stravaId' : data.athlete.id,
-          'discordId' : params.userId,
-          'refreshToken' : data.refresh_token,
-          'name' : `${data.athlete.firstname} ${data.athlete.lastname}`,
-          'username' : params.username,
-          'profile' : data.athlete.profile,
-          'totalRuns' : 0,
-          'totalDistance' : 0,
-          'totalTime' : 0,
-          'runs' : []
+        'stravaId' : data.athlete.id,
+        'discordId' : params.userId,
+        'refreshToken' : data.refresh_token,
+        'name' : `${data.athlete.firstname} ${data.athlete.lastname}`,
+        'username' : params.username,
+        'profile' : data.athlete.profile,
+        'totalRuns' : 0,
+        'totalDistance' : 0,
+        'totalTime' : 0,
+        'runs' : [],
+        'lastUpdated' : getStartOfWeek()
       })
       // find guild with given guild id
       let guild = await Guild.findOne({guildId : params.guildId})
       // add user to guild if user is not currently a member
-      if (!guild.members.map(member => member.id).includes(interaction.user.id)) {
+      if (!guild.members.map(member => member.id).includes(params.userId)) {
         guild.members.push({
           'id' : user.discordId,
           'joinedAt' : new Date(),
@@ -60,7 +61,16 @@ function authoriseUser(params, code) {
         await guild.save()
       }
       await user.save()
-      console.log('User added to Achilles!')
-      }
+      console.log(`${params.username} added to Achilles!`)
+    }
   )
+}
+
+function getStartOfWeek() {
+  d = new Date();
+  d.setUTCHours(0,0,0,0)
+  let day = d.getDay()
+  let diff = d.getDate()
+  diff = diff - day + (day == 0 ? -6:1);
+  return new Date(d.setDate(diff));
 }

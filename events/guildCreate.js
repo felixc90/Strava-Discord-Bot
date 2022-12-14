@@ -10,7 +10,9 @@ module.exports = {
 	name: 'guildCreate',
 	once: true,
 	async execute(client, guild) {
+    console.log(guild)
     const newGuild = new Guild({
+      'name' : guild.name,
       'guildId' : guild.id,
       'members' : []
     })

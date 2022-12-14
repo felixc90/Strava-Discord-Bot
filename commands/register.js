@@ -32,7 +32,7 @@ module.exports = {
             .setURL(url),
           );
         // reply with button which links Strava
-        await interaction.reply({content:'Register your Strava account with Achilles', 
+        await interaction.reply({content:'Register your Strava account with Achilles with this one time link', 
           components: [row], ephemeral: true})
       // user is found in the database i.e. we can use previous user data
       } else {
@@ -48,14 +48,11 @@ module.exports = {
               'logEntries' : []
           })
           await guild.save()
-          await interaction.reply({content: `${interaction.user.username} registered in ${interaction.guild.name} leaderboard!`, ephemeral: true})
+          await interaction.reply({content: `${interaction.user.username} registered to ${interaction.guild.name} leaderboard!`, ephemeral: true})
         // if user is registered in the guild's competition
         } else {
-          await interaction.reply({content: `${interaction.user.username} already registered in ${interaction.guild.name} leaderboard!`, ephemeral: true})
+          await interaction.reply({content: `${interaction.user.username} already registered to ${interaction.guild.name} leaderboard!`, ephemeral: true})
         }
       }
-      return;
-
-      
     }
 };

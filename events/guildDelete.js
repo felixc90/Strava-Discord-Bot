@@ -11,7 +11,7 @@ module.exports = {
 	once: true,
 	async execute(client, guild) {
     if (await Guild.deleteOne({guildId: guild.id}) != 1) {
-        console.log("Error occurred");
+        console.log("Error occurred in deleting guild");
         return;
     }
     console.log(`Removed guild: ${guild.name}`);
