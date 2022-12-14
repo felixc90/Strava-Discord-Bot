@@ -1,5 +1,6 @@
 const User  = require('../models/User');
 const Guild  = require('../models/Guild');
+const { getStartOfPeriod } = require('../utils/helper')
 
 module.exports = { 
     getFields : getFields
@@ -18,42 +19,47 @@ async function getFields(type, userId, guildId) {
                 })
             )
         case "leaderboard":
-            
+            variable = await getLeaderboardFields(guild)
+            console.log(variable)
+            return await getLeaderboardFields(guild);
         default:
-            
             break;
     }
 }
 
-async function getLeaderboard(guild) {
+async function getLeaderboardFields(guild) {
     
     // Require the weekly data for each user
-    const weekly_data = []
+    const weeklyData = []
     
     // Calculate the number of days since the start of the week
-    let difference_time = (new Date()).getTime() - getStartOfPeriod(new Date(), "day").getTime();
-    let difference_days = parseInt(difference_time / (1000 * 3600 * 24));
-    for (const member_id of guild.members) {
+    let differenceTime = (new Date()).getTime() - getStartOfPeriod(new Date(), "day").getTime();
+    let differenceDays = parseInt(differenceTime / (1000 * 3600 * 24));
+    for (const member of guild.members) {
         // Get data for user since the start of the week
-        const user = await User.findOne({discord_id: member_id})
-        const data = await getRunData(member_id, "day", metricStrategy, difference_days)
-        weekly_data.push({
+        const user = await User.findOne({ discordId : member.id}, 'username name')
+        let total = 0
+        for (const logEntry of member.logEntries) {
+            if (logEntry.dateStart - getStartOfPeriod(new Date(), "week") < 0) {
+                break
+            }
+            total += logEntry.value
+        }
+        weeklyData.push({
             username: user.username,
             name: user.name,
-            runData: data.runData.reduce((accumulator, curr) => accumulator + curr),
+            data: total,
         })
     }
     
-    // Sort data by 
-    weekly_data.sort((data1, data2) =>  data1.runData - data2.runData)
-    if (weekly_data.length == 0) return {name: '👻', value: 'No records to show...', inline: false}
-
-    const start = (guild.pageNumber - 1) * 5
-    const end = guild.pageNumber * 5
-    return (weekly_data.slice(start, end).map(user => ({
-    name: `${medals[weekly_data.indexOf(user)]}`,
-    value: `${metricStrategy.getValue(user.runData)} | ${
-        user.name + (user.username === null ? '' : ` (${user.username})`)}`,
+    // Sort data by value
+    weeklyData.sort((user1, user2) =>  user1.data - user2.data)
+    if (weeklyData.length == 0) return {name: '👻', value: 'No records to show...', inline: false}
+    
+    return (weeklyData.map(user => ({
+        name: `${ordinal(weeklyData.indexOf(user) + 1)}`,
+        value: `${user.data} | ${
+            user.name + (user.username === null ? '' : ` (${user.username})`)}`,
         inline: false,
     })))
 }
@@ -62,7 +68,7 @@ async function getLeaderboard(guild) {
 function ordinal(n) {
     if (n <= 3) {
         medals = ['\u200b\n🥇','🥈','🥉']
-        return medals[n]
+        return medals[n - 1]
     }
     var s = ["th", "st", "nd", "rd"];
     var v = n % 100;

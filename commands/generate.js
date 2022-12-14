@@ -8,13 +8,13 @@ module.exports = {
 		.setName('generate')
 		.setDescription('Adds randomised activities to the user\'s Strava'),
         async execute(interaction) {
-            const user = await User.findOne({discord_id : interaction.user.id})
-            const runs = (await user.statistics.populate({path: 'runs'})).runs
+            const user = await User.findOne({discordId : interaction.user.id})
+            const runs = (await user.populate({path: 'runs'})).runs
             const lastRunDate = getStartOfPeriod(runs[0].date, "day")
             let count = 0
             let currDate = getStartOfPeriod(new Date(), "day")
             while (currDate - lastRunDate > 0) {
-                await fetch(`https://www.strava.com/api/v3/activities?access_token=${await reAuthorize(user)}`, {
+                await fetch(`https://www.strava.com/api/v3/activities?access_token=${await reAuthorize(user.refreshToken)}`, {
                     method: 'post',
                     headers: {
                         'Accept': 'application/json, text/plain, */*',
@@ -28,7 +28,7 @@ module.exports = {
                         start_date_local: currDate
                     })
                 }).then((res) => res.json())
-                .then(json => console.log(json.name))
+                .then(json => console.log(json))
                 currDate = getStartOfPeriod(currDate - 1, "day")
             }
             

@@ -18,10 +18,11 @@ module.exports = {
             const fields = await getFields("leaderboard", interaction.user.id, interaction.guild.id)
             const user = await User.findOne({discordId: interaction.user.id}, 'name');
             const title = `Weekly Leaderboard`;
-            const description = "something";
-            fields = [{'name' : 'name', 'value' : 'value', 'inline' : false}]
-            await interaction.reply({ 
+            const description = '======based on points=======';
+            reply = {
                 embeds: [await getMessageEmbed(title, description, fields, 1)], 
-                components: [await getMessageRow(fields, 1)]})
+            }
+            if (fields.length > 5) reply.components = [await getMessageRow(fields, 1)]
+            await interaction.reply(reply)
         }
 };

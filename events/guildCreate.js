@@ -10,13 +10,11 @@ module.exports = {
 	name: 'guildCreate',
 	once: true,
 	async execute(client, guild) {
-		console.log(`Joined ${guild.name}`);
-
-        // Add all users who were previously in the discord server
-        const newGuild = new Guild({
-            'guildId' : guild.id,
-            'members' : []
-        })
-        await newGuild.save()
+    const newGuild = new Guild({
+      'guildId' : guild.id,
+      'members' : []
+    })
+    await newGuild.save()
+    console.log(`Added guild: ${guild.name}`);
 	},
 };

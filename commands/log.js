@@ -19,7 +19,7 @@ module.exports = {
             const user = await User.findOne({discordId: interaction.user.id}, 'name');
             // await interaction.reply({ content : "los"})
             const title = `${user.name}'s Running Log`;
-            const description = "something";
+            const description = "'============================'";
             reply = {
                 embeds: [await getMessageEmbed(title, description, fields, 1)], 
             }
