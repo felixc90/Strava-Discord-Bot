@@ -156,7 +156,7 @@ async function togglePage(interaction) {
       pageNumber += 1
   }
 
-  await interaction.reply({
+  await interaction.update({
     embeds: [getMessageEmbed(prevMessageEmbed.title, prevMessageEmbed.description, fields, pageNumber)],
     components: [getMessageRow(fields, pageNumber)]
   })
