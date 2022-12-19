@@ -42,8 +42,6 @@ async function getFields(guild) {
   // require the weekly data for each user
   const weeklyData = []
 
-  // TODO
-  // if (guild.members.length == 0) return {name: '👻', value: 'No records to show...', inline: false}
   for (const member of guild.members) {
     // get data for user since the start of the week
     const user = await User.findOne({ discordId : member.id}, 'username name runs').populate({path: 'runs'})
@@ -76,6 +74,10 @@ async function getFields(guild) {
   //   weeklyData.push(newData)
   // }
     
+
+  if (guild.members.length == 0) {
+    return {name: '👻', value: 'No records to show...', inline: false}
+  }
   // Sort data by value
   weeklyData.sort((user1, user2) => user2.data - user1.data)
 

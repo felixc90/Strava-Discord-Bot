@@ -13,16 +13,16 @@ module.exports = {
       .setDescription('Choose length of time period')
       .setRequired(true)
       .addChoices(
-                { name: 'day', value: 'day' },
-                { name: 'week', value: 'week' },
-                { name: 'month', value: 'month' },
-                { name: 'year', value: 'year' }
+        { name: 'day', value: 'day' },
+        { name: 'week', value: 'week' },
+        { name: 'month', value: 'month' },
+        { name: 'year', value: 'year' }
       ))
       .addIntegerOption(option =>
         option.setName("nperiods")
             .setDescription("Choose number of periods")
             .setMinValue(0)
-    )
+      )
     .addUserOption(option => option.setName('user').setDescription('Compare your activity with another user')),
       async execute(interaction) {
         const unitOfTime = interaction.options._hoistedOptions.filter(option => option.name == 'period')[0].value

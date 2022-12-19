@@ -2,7 +2,7 @@ const fetch = require('node-fetch');
 const dotenv = require('dotenv');
 const Guild  = require('../models/Guild');
 const User  = require('../models/User');
-const { getStartOfWeek } = require('../utils/helpers')
+const { getStartOfPeriod } = require('../utils/helpers')
 
 dotenv.config()
 
@@ -45,7 +45,7 @@ function authoriseUser(params, code) {
         'totalDistance' : 0,
         'totalTime' : 0,
         'runs' : [],
-        'lastUpdated' : getStartOfWeek()
+        'lastUpdated' : getStartOfPeriod(new Date(), 'week')
       })
       // find guild with given guild id
       let guild = await Guild.findOne({guildId : params.guildId})

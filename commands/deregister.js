@@ -9,7 +9,7 @@ dotenv.config()
 module.exports = {
 	data: new SlashCommandBuilder()
     .setName('deregister')
-    .setDescription('Unlink your Strava account from this guild!'),
+    .setDescription('Deregister yourself from this server\'s competition.'),
     async execute(interaction) {
 
       const guild = await Guild.findOne({guildId : interaction.guild.id})
