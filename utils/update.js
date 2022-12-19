@@ -21,9 +21,7 @@ async function updateUsers(guildId) {
     const accessToken = await reAuthorize(user.refreshToken);
     const newRuns = []
     await getActivities(newRuns, accessToken, user.lastUpdated, 1);
-    console.log(user.runs.length)
     user.runs = [...newRuns, ...user.runs];
-    console.log(user.runs.length)
     user.lastUpdated = new Date();
     await user.save();
   }
@@ -51,25 +49,24 @@ async function reAuthorize(refreshToken) {
 
 // updates data for a single user
 async function getActivities(newRuns, accessToken, lastUpdated, page) {
-  console.log(page)
-  const activitiesLink = `https://www.strava.com/api/v3/athlete/activities?access_token=${accessToken}&page=${page}&after=${lastUpdated.getTime() / 1000}`
+  const activitiesLink = `https://www.strava.com/api/v3/athlete/activities?access_token=${accessToken}&page=${page}&after=${Date.UTC(lastUpdated) / 1000}`
   await fetch(activitiesLink)
   .then(res => res.json())
   .then(async (data) => {
     if (data.length == 0) return
+    console.log(data)
     for (const activity of data) {
       if (activity.type != "Run") continue;
-      const newRun = new Run({
+      const newRun = {
         'id' : activity.id,
         'name' : activity.name,
         'startLatlng' : activity.start_latlng,
         'endLatlng' : activity.end_latlng,
-        'date' : activity.start_date_local,
+        'date' : activity.start_date,
         'time' : activity.moving_time / 60,
         'distance' : activity.distance / 1000,
         'summaryPolyline' : activity.map.summary_polyline,
-      })
-      newRun.save()
+      }
       newRuns.unshift(newRun)
     }
     // recursively fetch activities

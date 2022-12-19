@@ -12,6 +12,17 @@ var schema = mongoose.Schema({
   'totalDistance' : Number,
   'totalTime' : Number,
   'lastUpdated' : Date,
-  'runs' : [{ type: mongoose.Schema.Types.ObjectId, ref: 'Run' }]
+  'runs' : [
+    {
+      'id' : String,
+      'name' : String,
+      'startLatlng' : [Number],
+      'endLatlng' : [Number],
+      'date' : Date,
+      'time' : Number,
+      'distance' : Number,
+      'summaryPolyline' : String,
+    }
+  ]
 })
 module.exports = mongoose.model("User", schema)

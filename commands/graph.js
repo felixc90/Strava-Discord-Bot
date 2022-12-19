@@ -10,44 +10,40 @@ module.exports = {
 		.setName('graph')
 		.setDescription('Shows the mileage for user and others (optional) in a graph!')
     .addStringOption(option => option.setName('period')
-    .setDescription('Choose length of time period')
-    .setRequired(true)
-    .addChoices(
-              { name: 'day', value: 'day' },
-              { name: 'week', value: 'week' },
-              { name: 'month', value: 'month' },
-              { name: 'year', value: 'year' }
-    ))
+      .setDescription('Choose length of time period')
+      .setRequired(true)
+      .addChoices(
+                { name: 'day', value: 'day' },
+                { name: 'week', value: 'week' },
+                { name: 'month', value: 'month' },
+                { name: 'year', value: 'year' }
+      ))
+      .addIntegerOption(option =>
+        option.setName("nperiods")
+            .setDescription("Choose number of periods")
+            .setMinValue(0)
+    )
     .addUserOption(option => option.setName('user').setDescription('Compare your activity with another user')),
       async execute(interaction) {
         const unitOfTime = interaction.options._hoistedOptions.filter(option => option.name == 'period')[0].value
-        console.log(getStartOfPeriod(new Date(), unitOfTime))
-        const [dates, dataset] = await getRunData(interaction.user.id, unitOfTime, 3)
+        let nPeriods = 1
+        if (interaction.options._hoistedOptions.filter(option => option.name == 'nperiods').length > 0) {
+          nPeriods = interaction.options._hoistedOptions.filter(option => option.name == 'nperiods')[0].value
+        }
+        const [dates, dataset] = await getRunData(interaction.user.id, unitOfTime, nPeriods + 1)
         const datasets = [dataset]
         const users = [interaction.user.username]
-          // if (interaction.options._hoistedOptions.filter(option => option.name == 'user').length > 0) {
-          //     let other = interaction.options._hoistedOptions.filter(option => option.name == 'user')[0]
-          //     run_data = await getRunData(other.user.id, unit_of_time, -1)
-          //     datasets.push({
-          //         username : other.user.username,
-          //         dates : run_data.dates,
-          //         data : run_data.distances
-          //     })
-          // }
-          // let min_length = Math.min(datasets.map(dataset => dataset.length))
-          // datasets.map(dataset => { 
-          //     return {
-          //         username : dataset.username,
-          //         dates : dataset.dates.reverse().slice(0, min_length),
-          //         data : dataset.data.reverse().slice(0, min_length) 
-          //     }
-          // })
+
+
+        if (interaction.options._hoistedOptions.filter(option => option.name == 'user').length > 0) {
+          let other = interaction.options._hoistedOptions.filter(option => option.name == 'user')[0]
+          const [, otherDataset] = await getRunData(other.user.id, unitOfTime, nPeriods + 1)
+          users.push(other.user.username)
+          // otherDataset.reverse()
+          datasets.push(otherDataset)
+        }
         const graph = await plotData(dates, datasets, users, unitOfTime)
-        console.log(graph)
-        await interaction.reply(
-          // 'lol'
-          {files: [graph]}
-        )
+        await interaction.reply({files: [graph]})
       }
 };
 
@@ -64,7 +60,7 @@ async function plotData(dates, datasets, users, unitOfTime) {
   }, )
   
   registerFont("./assets/CourierPrime-Regular.ttf", { family: "Courier" })
-  const image = await canvas.renderToBuffer(getConfig(dates, datasets, users))
+  const image = await canvas.renderToBuffer(getConfig(dates, datasets, users, unitOfTime))
   const attachment = new MessageAttachment(image)
   return attachment
 }
@@ -77,7 +73,6 @@ function getConfig(labels, datasets, users, unitOfTime) {
       data: {
         labels: labels,
         datasets: datasets.map( (dataset, i) => {
-          console.log(i, dataset)
           return {
             label: users[i],
             data: dataset,
@@ -85,7 +80,7 @@ function getConfig(labels, datasets, users, unitOfTime) {
             borderWidth: 1,
             pointBackgroundColor: 'white',
             pointBorderColor: 'white',
-            borderColor: '#05CBE1',
+            borderColor: borderColors[i],
             fill: true,
             cubicInterpolationMode: 'monotone',
             tension: 0.2,
@@ -175,4 +170,9 @@ const backgroundColors = [
       gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
       return gradient;
   },
+]
+
+const borderColors = [
+  '#05CBE1',
+  '#FC2525',
 ]

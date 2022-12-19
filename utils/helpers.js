@@ -31,15 +31,14 @@ async function getNumActivePeriods(runs, unitOfTime) {
 
 async function getRunData(userId, unitOfTime, numPeriods) {
   const user = await User.findOne({discord_id : userId})
-  const runs = (await user.populate({path: 'runs'})).runs
+  const runs = user.runs
   let runIndex = 0
   let dates = []
   let data = []
   let currDate = getStartOfPeriod(new Date(), unitOfTime)
-  
   // count the number of last 'numPeriods' periods
   for (let i = 0; i < numPeriods; i++) {
-    dates.push(currDate)
+    dates.unshift(currDate)
     let total = 0;
     // process each run that shares the same start as the current date's start
     while (runIndex < runs.length && 
@@ -48,7 +47,7 @@ async function getRunData(userId, unitOfTime, numPeriods) {
       runIndex += 1
     }
     currDate = getStartOfPeriod(currDate - 1, unitOfTime)
-    data.push(total)
+    data.unshift(total)
   }
   dates = dates.map((date) => date.getDate() + '/' + 
   (date.getMonth() + 1))
@@ -56,19 +55,18 @@ async function getRunData(userId, unitOfTime, numPeriods) {
 }
 
 function getStartOfPeriod(d, unitOfTime) {
+  d = new Date(d);
   if (unitOfTime === "day") {
-    d = new Date(d);
-    d.setHours(0,0,0,0)
+    d.setUTCHours(0,0,0,0)
     return d;
   } else if (unitOfTime === "week") {
-    d = new Date(d);
-    d.setHours(0,0,0,0)
-    d.setDate(d.getDate() - d.getDay() + (d.getDay() == 0 ? -6:1));
+    d.setUTCHours(0,0,0,0)
+    d.setUTCDate(d.getUTCDate() - d.getUTCDay() + (d.getUTCDay() == 0 ? -6:1));
     return d;
   } else if (unitOfTime === "month") {
-    return new Date(d.getFullYear(), d.getMonth(), 1);
+    return new Date(d.getUTCFullYear(), d.getUTCMonth(), 1);
   } else if (unitOfTime === "year") {
-    return new Date(d.getFullYear(), 0, 1);
+    return new Date(d.getUTCFullYear(), 0, 1);
   }
   console.log("Invalid unit of time")
 }

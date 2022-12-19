@@ -63,34 +63,18 @@ async function getFields(guild) {
     })
   }
 
-  for (let i = 0; i < 10; i++) {
-    if (i === 1) {
-      continue
-    }
-    let newData = {
-      data: 0,
-      username: "",
-      name: ""
-    };
-    newData.data = weeklyData[0].data * i;
-    newData.username = weeklyData[0].username + i.toString();
-    newData.name += weeklyData[0].name + i.toString();
-    weeklyData.push(newData)
-  }
 
-  for (let i = -10; i < 0; i++) {
-    if (i === 1) {
-      continue
-    }
-    let newData = {
-      data: 0,
-      username: weeklyData[0].username,
-      name: ""
-    };
-    newData.data = weeklyData[0].data * i;
-    newData.name += weeklyData[0].name + i.toString();
-    weeklyData.push(newData)
-  }
+  // artifical data
+  // const names = ["Cornflower Blue", "Green Yellow", "Moccasin", "Steel Blue", "Medium Slate Blue", "Light Green", "Medium Sea Green", "Slate Blue", "Thistle", "Light Pink", "Medium Purple", "Turquoise", "Lawn Green", "Light Goldenrod Yellow", "Honeydew", "Olive", "Lime", "Purple", "Beige", "Pale Turquoise", "Navajo White", "Sienna", "Midnight Blue", "Gray", "Deep Pink", "Dark Slate Gray", "Medium Spring Green", "Violet", "White Smoke", "Hot Pink", "Floral White", "Goldenrod", "Dark Violet", "Misty Rose", "Coral", "Snow", "Amethyst", "Fire Brick", "Dodger Blue", "Indian Red", "Sandy Brown", "Dark Sea Green", "Black", "Blue", "Lavender", "Medium Slate Blue", "Aquamarine", "Orange Red", "Light Coral", "Slate Gray", "Rosy Brown", "Powder Blue", "Dark Magenta", "Sea Green", "Light Sky Blue", "Green", "Burly Wood", "Bisque", "Gold", "Crimson", "Dark Slate Blue", "Medium Violet Red", "Aqua", "Dark Goldenrod", "Light Salmon", "Plum", "Teal", "Orange", "Dark Orchid", "Linen", "Pale Violet Red", "Light Sea Green", "Old Lace", "Chocolate", "Peach Puff", "Orchid", "Red", "Medium Aquamarine", "Gainsboro", "Khaki", "Pale Goldenrod", "Yellow Green", "Dark Blue", "Blanched Almond", "Forest Green", "Dark Red", "Light Steel Blue", "Medium Orchid", "Olive Drab", "Saddle Brown", "Alice Blue", "Mint Cream", "Azure", "Antique White", "Seashell", "Navy", "Light Grey", "Pale Green", "Magenta", "Tomato"]
+  // for (let i = 0; i < 5; i++) {
+  //   const value = Math.floor(Math.random() * 100)
+  //   let newData = {
+  //     data: value,
+  //     username: names[value].split(' ').map(word => word[0]).join(''),
+  //     name: names[value]
+  //   };
+  //   weeklyData.push(newData)
+  // }
     
   // Sort data by value
   weeklyData.sort((user1, user2) => user2.data - user1.data)
@@ -163,4 +147,3 @@ async function togglePage(interaction) {
     components: [getMessageRow(fields, pageNumber)]
   })
 }
-
