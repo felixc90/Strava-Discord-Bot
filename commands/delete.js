@@ -15,6 +15,9 @@ module.exports = {
       .setRequired(true)
     ),
     async execute(interaction) {
+      if (! (await User.findOne({discordId : interaction.user.id}))) {
+        await interaction.reply(`Error occurred: ${interaction.user.username} not registered to Achilles`)
+      }
       const username = interaction.options._hoistedOptions.filter(option => option.name == 'confirm')[0].value
       if (username === interaction.user.username) {
         const guilds = await Guild.find({members: {$elemMatch: {id: interaction.user.id}}})
@@ -23,7 +26,7 @@ module.exports = {
           guild.members = guild.members.filter(member => member.id !== interaction.user.id)
           guild.save()
         })
-        // await User.deleteOne({discordId : interaction.user.id})
+        await User.deleteOne({discordId : interaction.user.id})
         await interaction.reply(`${interaction.user.username} successfully deleted from Achilles.`)
       } else {
         await interaction.reply(`Error occurred: usernames do not match!`)

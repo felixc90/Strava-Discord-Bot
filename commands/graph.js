@@ -25,6 +25,9 @@ module.exports = {
       )
     .addUserOption(option => option.setName('user').setDescription('Compare your activity with another user')),
       async execute(interaction) {
+        if (! (await User.findOne({discordId : interaction.user.id}))) {
+          await interaction.reply(`Error occurred: ${interaction.user.username} not registered to Achilles`)
+        }
         const unitOfTime = interaction.options._hoistedOptions.filter(option => option.name == 'period')[0].value
         let nPeriods = 1
         if (interaction.options._hoistedOptions.filter(option => option.name == 'nperiods').length > 0) {

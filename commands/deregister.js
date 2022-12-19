@@ -11,6 +11,9 @@ module.exports = {
     .setName('deregister')
     .setDescription('Deregister yourself from this server\'s competition.'),
     async execute(interaction) {
+      if (! (await User.findOne({discordId : interaction.user.id}))) {
+        await interaction.reply(`Error occurred: ${interaction.user.username} not registered to Achilles`)
+      }
 
       const guild = await Guild.findOne({guildId : interaction.guild.id})
 
