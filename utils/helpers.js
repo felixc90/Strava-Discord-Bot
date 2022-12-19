@@ -7,21 +7,21 @@ const Guild  = require('../models/Guild');
 dotenv.config()
 
 module.exports = {
-    getStartOfWeek : getStartOfWeek,
     getNumActivePeriods : getNumActivePeriods,
     getRunData : getRunData,
-    toPace : toPace
+    toPace : toPace,
+    getStartOfPeriod : getStartOfPeriod
 }
 
-async function getNumActivePeriods(runs, time_unit) {
+async function getNumActivePeriods(runs, unitOfTime) {
     let prev_run = {date: new Date()}
     let num_active_periods = 0;
     for (const curr_run of runs) {
-        let difference = (getStartOfPeriod(prev_run.date, time_unit) - 
-        getStartOfPeriod(curr_run.date, time_unit)) / (1000 * 3600 * 24)
-        if (time_unit == "week") (difference = difference / 7)
-        if ((time_unit == "day" && difference > 7) ||
-            (time_unit == "week" && difference > 4)) {break}
+        let difference = (getStartOfPeriod(prev_run.date, unitOfTime) - 
+        getStartOfPeriod(curr_run.date, unitOfTime)) / (1000 * 3600 * 24)
+        if (unitOfTime == "week") (difference = difference / 7)
+        if ((unitOfTime == "day" && difference > 7) ||
+            (unitOfTime == "week" && difference > 4)) {break}
         prev_run = curr_run
         num_active_periods += 1
     }
@@ -29,63 +29,49 @@ async function getNumActivePeriods(runs, time_unit) {
 }
 
 
-async function getRunData(user_id, time_unit, active_periods) {
-    const user = await User.findOne({discord_id : user_id})
-    const runs = (await user.statistics.populate({path: 'runs'})).runs
-    let num_active_periods = await getNumActivePeriods(runs, time_unit)
-    console.log(num_active_periods);
-    if (active_periods < 0 || active_periods > num_active_periods) {
-        active_periods = num_active_periods
+async function getRunData(userId, unitOfTime, numPeriods) {
+  const user = await User.findOne({discord_id : userId})
+  const runs = (await user.populate({path: 'runs'})).runs
+  let runIndex = 0
+  let dates = []
+  let data = []
+  let currDate = getStartOfPeriod(new Date(), unitOfTime)
+  
+  // count the number of last 'numPeriods' periods
+  for (let i = 0; i < numPeriods; i++) {
+    dates.push(currDate)
+    let total = 0;
+    // process each run that shares the same start as the current date's start
+    while (runIndex < runs.length && 
+      currDate.getTime() == getStartOfPeriod(runs[runIndex].date, unitOfTime).getTime()) {
+      total += runs[runIndex].distance
+      runIndex += 1
     }
-    let index = 0
-    let dates = []
-    let runData = []
-    let curr_date = getStartOfPeriod(new Date(), time_unit)
-    // Not local time
-    while (index < active_periods) {
-        dates.push(curr_date)
-        runData.push(0)
-        console.log(curr_date)
-        console.log(getStartOfPeriod(runs[index].date, time_unit))
-        while (curr_date.getTime() == getStartOfPeriod(runs[index].date, time_unit).getTime()) {
-            if (dates.length > 0 && curr_date.getTime() == dates[dates.length - 1].getTime()) {
-                // to be changed
-                runData[runData.length - 1] += runs[index].distance
-            }
-            index += 1
-            if (index == active_periods) {
-                break
-            }
-            
-        }
-        if (index == active_periods) {
-            break
-        }
-        curr_date = getStartOfPeriod(curr_date - 1, time_unit)
-    }
-    while (dates.length < (time_unit == "day" ? 7 :4)) {
-        curr_date = getStartOfPeriod(curr_date - 1, time_unit)
-        dates.push(curr_date)
-        runData.push(0)
-    }
-    dates = dates.map((date) => date.getDate() + '/' + 
-    (date.getMonth() + 1))
-    return {
-        dates: dates,
-        runData : runData,
-    }
+    currDate = getStartOfPeriod(currDate - 1, unitOfTime)
+    data.push(total)
+  }
+  dates = dates.map((date) => date.getDate() + '/' + 
+  (date.getMonth() + 1))
+  return [dates, data]
 }
 
-function getStartOfWeek() {
-  d = new Date();
-  d.setUTCHours(0,0,0,0)
-  let day = d.getDay()
-  let diff = d.getDate()
-  diff = diff - day + (day == 0 ? -6:1);
-  return new Date(d.setDate(diff));
+function getStartOfPeriod(d, unitOfTime) {
+  if (unitOfTime === "day") {
+    d = new Date(d);
+    d.setHours(0,0,0,0)
+    return d;
+  } else if (unitOfTime === "week") {
+    d = new Date(d);
+    d.setHours(0,0,0,0)
+    d.setDate(d.getDate() - d.getDay() + (d.getDay() == 0 ? -6:1));
+    return d;
+  } else if (unitOfTime === "month") {
+    return new Date(d.getFullYear(), d.getMonth(), 1);
+  } else if (unitOfTime === "year") {
+    return new Date(d.getFullYear(), 0, 1);
+  }
+  console.log("Invalid unit of time")
 }
-
-
 
 function toPace(speed) {
     var min = Math.floor(Math.abs(speed));

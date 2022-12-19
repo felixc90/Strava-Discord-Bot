@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 const dotenv = require('dotenv');
 const User = require('../models/User')
 const Guild = require('../models/Guild')
-const { getStartOfWeek } = require('../utils/helpers')
+const { getStartOfPeriod } = require('../utils/helpers')
 const { updateUsers } = require('../utils/update')
 const { MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
 
@@ -26,6 +26,7 @@ module.exports = {
 };
 
 async function createLeaderboard(guildId) {
+  // TODO IMPLEMENT TIME
   const guild = await Guild.findOne({guildId: guildId})
   const title = `Weekly Leaderboard`;
   const description = '======based on distance======';
@@ -48,10 +49,11 @@ async function getFields(guild) {
     const user = await User.findOne({ discordId : member.id}, 'username name runs').populate({path: 'runs'})
     let total = 0;
     for (const run of user.runs) {
-      let differenceTime = (new Date(run.date)).getTime() - getStartOfWeek().getTime();
+      let differenceTime = (new Date(run.date)).getTime() - getStartOfPeriod(new Date(), 'week').getTime();
       if (differenceTime < 0) {
         break;
       }
+      // TODO IMPLEMENT TIME
       total += run.distance
     }
     weeklyData.push({
@@ -95,6 +97,7 @@ async function getFields(guild) {
 
   return (weeklyData.map(user => ({
     name: `${ordinal(weeklyData.indexOf(user) + 1)}`,
+    // TODO IMPLEMENT TIME
     value: `${user.data}km | ${
         user.name + (user.username && ` (${user.username})`)}`,
     inline: false,
@@ -127,17 +130,16 @@ function getMessageEmbed(title, description, fields, pageNumber) {
 function getMessageRow(fields, pageNumber) {
   const numPages = Math.ceil(Math.min(fields.length, numRanks) / pageSize);
   const row = new MessageActionRow()
-  console.log(pageNumber, numPages)
   row.addComponents(
     new MessageButton()
     .setCustomId('prev-page')
     .setLabel('Prev Page')
-    .setStyle('SECONDARY')
+    .setStyle('DANGER')
     .setDisabled(pageNumber === 1),
     new MessageButton()
     .setCustomId('next-page')
     .setLabel('Next Page')
-    .setStyle('SECONDARY')
+    .setStyle('SUCCESS')
     .setDisabled(pageNumber === numPages),
   )
   return row;
