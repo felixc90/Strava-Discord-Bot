@@ -14,9 +14,9 @@ module.exports = {
       .setRequired(true)
       .addChoices(
         { name: 'day', value: 'day' },
-        { name: 'week', value: 'week' },
-        { name: 'month', value: 'month' },
-        { name: 'year', value: 'year' }
+        { name: 'week', value: 'week' }
+        // { name: 'month', value: 'month' },
+        // { name: 'year', value: 'year' }
       ))
       .addIntegerOption(option =>
         option.setName("nperiods")
@@ -126,6 +126,7 @@ function getConfig(labels, datasets, users, unitOfTime) {
       },
       scales: {
         y: {
+          min: 0,
           ticks: {
             callback: function(value, index, ticks) {
                 return value + 'km';
@@ -135,7 +136,7 @@ function getConfig(labels, datasets, users, unitOfTime) {
                 family: font,
                 size: 20,
                 weight: '500',
-            }
+            },
           },
           position: 'left'
         },

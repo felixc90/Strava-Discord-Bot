@@ -59,7 +59,9 @@ async function getActivities(newRuns, accessToken, lastUpdated, page) {
   .then(res => res.json())
   .then(async (data) => {
     if (data.length == 0) return
-    console.log(data)
+    if (data.message === 'Rate Limit Exceeded') {
+      return;
+    }
     for (const activity of data) {
       if (activity.type != "Run") continue;
       const newRun = {
