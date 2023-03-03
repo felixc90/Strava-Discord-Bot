@@ -37,7 +37,6 @@ module.exports = {
         const datasets = [dataset]
         const users = [interaction.user.username]
 
-
         if (interaction.options._hoistedOptions.filter(option => option.name == 'user').length > 0) {
           let other = interaction.options._hoistedOptions.filter(option => option.name == 'user')[0]
           const [, otherDataset] = await getRunData(other.user.id, unitOfTime, nPeriods + 1)

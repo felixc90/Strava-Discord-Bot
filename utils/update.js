@@ -18,6 +18,7 @@ async function updateUsers(guildId) {
   const guild = await Guild.findOne({guildId: guildId})
   const users = await User.find({discordId : { $in: guild.members.map(member => member.id) } })
   for (const user of users) {
+    console.log("updating " + user.name + "...")
     const accessToken = await reAuthorize(user.refreshToken);
     const newRuns = []
     await getActivities(newRuns, accessToken, user.lastUpdated, 1);
@@ -54,12 +55,14 @@ async function reAuthorize(refreshToken) {
 
 // updates data for a single user
 async function getActivities(newRuns, accessToken, lastUpdated, page) {
-  const activitiesLink = `https://www.strava.com/api/v3/athlete/activities?access_token=${accessToken}&page=${page}&after=${Date.UTC(lastUpdated) / 1000}`
+  let d = new Date(lastUpdated)
+  const activitiesLink = `https://www.strava.com/api/v3/athlete/activities?access_token=${accessToken}&page=${page}&after=${d.getTime() / 1000}`
   await fetch(activitiesLink)
   .then(res => res.json())
   .then(async (data) => {
     if (data.length == 0) return
     if (data.message === 'Rate Limit Exceeded') {
+      console.log(data.message)
       return;
     }
     for (const activity of data) {

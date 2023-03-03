@@ -4,7 +4,7 @@ const { MessageEmbed } = require('discord.js');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('help')
-		.setDescription('Updates the weekly stats'),
+		.setDescription('Shows the list of commands that can be used'),
     async execute(interaction) {
     const helpEmbed = new MessageEmbed()
       .setColor('#0099ff')

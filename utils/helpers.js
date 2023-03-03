@@ -30,7 +30,7 @@ async function getNumActivePeriods(runs, unitOfTime) {
 
 
 async function getRunData(userId, unitOfTime, numPeriods) {
-  const user = await User.findOne({discord_id : userId})
+  const user = await User.findOne({discordId : userId})
   const runs = user.runs
   let runIndex = 0
   let dates = []
