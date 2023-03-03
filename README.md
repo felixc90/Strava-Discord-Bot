@@ -1,9 +1,5 @@
 # Achilles Discord Bot
 
-## Website
-
-Website can be found [here].
-
 ## About
 Achilles is a Discord bot that allows you and your mates to compare your athletic progress and compete for a top place in the weekly leaderboard. Visualise your Strava data through graphs and tables that track your and up to one other user's long-term athletic development as well as a heatmap that can be found on the hosting website.
 
@@ -25,4 +21,3 @@ Achilles is a Discord bot that allows you and your mates to compare your athleti
 - Heroku free hosting sometimes lags and as a result, the update button on the leaderboard is variable and often requires up to three pushes.
 - If a server kicks the bot, their data is deleted in compliance with Discord's data policies.
 - The bot can be added to a server by clicking [here](https://discord.com/oauth2/authorize?client_id=925565690054856735&permissions=8&scope=bot%20applications.commands)!
-- FYC2022{st@Y_pr0fe55ional@@}
