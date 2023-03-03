@@ -22,6 +22,11 @@ async function updateUsers(guildId) {
     const newRuns = []
     await getActivities(newRuns, accessToken, user.lastUpdated, 1);
     user.runs = [...newRuns, ...user.runs];
+    newRuns.forEach(newRun => {
+      user.totalDistance += newRun.distance;
+      user.totalTime += newRun.time;
+      user.totalRuns += 1;
+    })
     user.lastUpdated = new Date();
     await user.save();
   }
@@ -73,31 +78,3 @@ async function getActivities(newRuns, accessToken, lastUpdated, page) {
     await getActivities(newRuns, accessToken, lastUpdated, page + 1)
   })
 }
-
-
-
-
-
-// async function updateGuildUser(guild, user) {
-//     const runs = (await user.populate({path: 'runs'})).runs
-//     const guildUser = guild.members.find(member => member.id == user.discordId)
-//     const logEntries = []
-//     for (const run of runs) {
-//         if (run.id == guildUser.mostRecentRunId) break
-//         logEntries.push({
-//             'logType' : "run",
-//             'value' : parseInt(run.time),
-//             'dateStart' : run.date,
-//             'dateEnd' : new Date()
-//         })
-//         guildUser.totalExp += run.time;
-//     }
-//     if (logEntries.length == 0) return
-//     guildUser.mostRecentRunId = runs[0].id
-//     logEntries.reverse()
-//     for (const logEntry of logEntries) {
-
-//         guildUser.logEntries.unshift(logEntry);
-//     }
-//     await guild.save()
-// }
