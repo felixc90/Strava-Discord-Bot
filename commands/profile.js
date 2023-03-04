@@ -1,7 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
 const dotenv = require('dotenv');
-const Guild = require('../models/Guild');
 const User = require('../models/User');
 const fetch = require('node-fetch');
 
@@ -13,7 +12,10 @@ module.exports = {
 		.setDescription('Displays your athlete profile!'),
         async execute(interaction) {
         const user = await User.findOne({discordId : interaction.user.id})
-        const guild = await Guild.findOne({guildId : interaction.guild.id})
+        if (!user) {
+          await interaction.reply({content : `Not currently registered to Achilles leaderboard, user command /register`})
+          return;
+        }
         let longestRun = user.longestRun;
         start = longestRun.startLatlng
         end = longestRun.endLatlng
@@ -31,8 +33,7 @@ module.exports = {
             location_text = start_suburb == end_suburb ? `in ${start_suburb}!` : `from ${start_suburb} to ${end_suburb}!`
         }
 
-        console.log(user.discordId)
-        const joinedAt = guild.members.find(member => member.id === user.discordId).joinedAt
+        const joinedAt = user.joinedAt;
 
         const date1 = new Date(user.runs[0].date);
         const date2 = new Date();
@@ -60,7 +61,7 @@ module.exports = {
                 Average Speed: ${toPace((longestRun.time/longestRun.distance).toFixed(2))} min/km`, inline: false},
             )
             .setThumbnail(user.profile)
-        await interaction.reply({embeds : [helpEmbed], ephemeral: true})
+          await interaction.reply({embeds : [helpEmbed], ephemeral: true})
         }
 };
 
@@ -68,6 +69,5 @@ function toPace(speed) {
     let minutes = parseInt(speed);
     let seconds = parseInt((speed - parseInt(speed)) * 60);
     seconds = seconds < 10 ? '0' + seconds.toString() : seconds;
-    console.log(minutes, seconds)
     return `${minutes}:${seconds}`
 }

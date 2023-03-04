@@ -22,12 +22,12 @@ async function updateUsers(guildId) {
     const newRuns = []
     await getActivities(newRuns, accessToken, user.lastUpdated, 1);
     user.runs = [...newRuns, ...user.runs];
+
     newRuns.forEach(newRun => {
       user.totalDistance += newRun.distance;
       user.totalTime += newRun.time;
       user.totalRuns += 1;
-      if (!user.longestRun.id || 
-        (newRun.distance >= user.longestRun.distance || newRun.time >= user.longestRun.time)) {
+      if (!user.longestRun.id || newRun.distance >= user.longestRun.distance) {
           user.longestRun = newRun;
       }
 

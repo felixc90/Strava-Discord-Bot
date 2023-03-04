@@ -77,7 +77,7 @@ async function getFields(guild) {
     
 
   if (guild.members.length == 0) {
-    return {name: '👻', value: 'No records to show...', inline: false}
+    return [{name: '👻', value: 'No records to show...', inline: false}]
   }
   // Sort data by value
   weeklyData.sort((user1, user2) => user2.data - user1.data)

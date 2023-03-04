@@ -13,15 +13,15 @@ module.exports = {
     async execute(interaction) {
       const guild = await Guild.findOne({guildId: interaction.guild.id})
       const users = await User.find({discordId : { $in: guild.members.map(member => member.id) }})
-      var date = new Date();
-      date.setDate( date.getDate() - 6 );
-      date.setFullYear( date.getFullYear() - 1 );
+      let lastUpdated = new Date();
+      lastUpdated.setFullYear(lastUpdated.getFullYear() - 1);
+
       for (const user of users) {
         user.totalDistance = 0;
         user.totalRuns = 0;
         user.totalTime = 0;
         user.runs = new Array();
-        user.lastUpdated = date;
+        user.lastUpdated = lastUpdated;
         await user.save();
       }
       await interaction.reply({content: `Reset all user data`, ephemeral: true})

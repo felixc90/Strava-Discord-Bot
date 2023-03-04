@@ -4,6 +4,7 @@ const { MessageAttachment, MessageEmbed } = require('discord.js');
 const { registerFont } = require("canvas")
 const { getRunData, getStartOfPeriod } = require('../utils/helpers')
 const User = require('../models/User')
+const Guild = require('../models/Guild')
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -25,8 +26,14 @@ module.exports = {
       )
     .addUserOption(option => option.setName('user').setDescription('Compare your activity with another user')),
       async execute(interaction) {
-        if (! (await User.findOne({discordId : interaction.user.id}))) {
+        if (!(await User.findOne({discordId : interaction.user.id}))) {
           await interaction.reply(`Error occurred: ${interaction.user.username} not registered to Achilles`)
+          return;
+        }
+        const guild = await Guild.findOne({guildId: interaction.guild.id})
+        if (!guild.members.map(member => member.id).includes(interaction.user.id)) {
+          await interaction.reply(`Error occurred: ${interaction.user.username} is not registered to this server\'s leaderboard`)
+          return;
         }
         const unitOfTime = interaction.options._hoistedOptions.filter(option => option.name == 'period')[0].value
         let nPeriods = 1
@@ -39,9 +46,12 @@ module.exports = {
 
         if (interaction.options._hoistedOptions.filter(option => option.name == 'user').length > 0) {
           let other = interaction.options._hoistedOptions.filter(option => option.name == 'user')[0]
+          if (!guild.members.map(member => member.id).includes(other.user.id)) {
+            await interaction.reply(`Error occurred: ${other.user.username} is not registered to this server\'s leaderboard`)
+            return;
+          }
           const [, otherDataset] = await getRunData(other.user.id, unitOfTime, nPeriods + 1)
           users.push(other.user.username)
-          // otherDataset.reverse()
           datasets.push(otherDataset)
         }
         const graph = await plotData(dates, datasets, users, unitOfTime)
