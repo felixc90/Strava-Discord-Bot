@@ -55,6 +55,7 @@ module.exports = {
           datasets.push(otherDataset)
         }
         const graph = await plotData(dates, datasets, users, unitOfTime)
+        console.log('graph', graph)
         await interaction.reply({files: [graph]})
       }
 };
