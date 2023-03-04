@@ -26,6 +26,7 @@ module.exports = {
       )
     .addUserOption(option => option.setName('user').setDescription('Compare your activity with another user')),
       async execute(interaction) {
+        await interaction.deferReply();
         if (!(await User.findOne({discordId : interaction.user.id}))) {
           await interaction.reply(`Error occurred: ${interaction.user.username} not registered to Achilles`)
           return;
