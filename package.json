@@ -2,7 +2,7 @@
   "name": "strava-leaderboard",
   "version": "1.0.0",
   "engines": {
-    "node": "16.x"
+    "node": "16.6"
   },
   "description": "",
   "main": "old_index.js",
