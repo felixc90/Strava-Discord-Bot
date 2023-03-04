@@ -1,6 +1,5 @@
 const fetch = require('node-fetch');
 const dotenv = require('dotenv');
-const Run  = require('../models/Run');
 const User  = require('../models/User');
 const Guild  = require('../models/Guild');
 
@@ -27,6 +26,11 @@ async function updateUsers(guildId) {
       user.totalDistance += newRun.distance;
       user.totalTime += newRun.time;
       user.totalRuns += 1;
+      if (!user.longestRun.id || 
+        (newRun.distance >= user.longestRun.distance || newRun.time >= user.longestRun.time)) {
+          user.longestRun = newRun;
+      }
+
     })
     user.lastUpdated = new Date();
     await user.save();

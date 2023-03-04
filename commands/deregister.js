@@ -23,7 +23,7 @@ module.exports = {
         await guild.save()
         await interaction.reply({content: `Successfully unlinked from Achilles leaderboard!`, ephemeral: true})
       } else {
-        await interaction.reply({content: `Not currently registered to Achilles leaderboard, user command \\register`, ephemeral: true})
+        await interaction.reply({content: `Not currently registered to Achilles leaderboard, user command /register`, ephemeral: true})
       }
     }
 };

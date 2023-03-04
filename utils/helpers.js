@@ -1,6 +1,5 @@
 const fetch = require('node-fetch');
 const dotenv = require('dotenv');
-const Run  = require('../models/Run');
 const User  = require('../models/User');
 const Guild  = require('../models/Guild');
 
