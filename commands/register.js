@@ -14,7 +14,7 @@ module.exports = {
       const user = await User.findOne({discordId : interaction.user.id})
 
       // user is not found i.e. needs to registered
-      if (user == null) {
+      if (!user) {
         let url = 'https://www.strava.com/oauth/authorize?client_id=71610' + 
         '&response_type=code&redirect_uri=' +
         `${process.env.URL}user/register` + 

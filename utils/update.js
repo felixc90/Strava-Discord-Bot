@@ -9,6 +9,7 @@ const authLink = "https://www.strava.com/oauth/token"
 
 module.exports = {
     updateUsers : updateUsers,
+    updateUser : updateUser,
     reAuthorize : reAuthorize
 }
 
@@ -17,24 +18,28 @@ async function updateUsers(guildId) {
   const guild = await Guild.findOne({guildId: guildId})
   const users = await User.find({discordId : { $in: guild.members.map(member => member.id) } })
   for (const user of users) {
-    console.log("updating " + user.name + "...")
-    const accessToken = await reAuthorize(user.refreshToken);
-    const newRuns = []
-    await getActivities(newRuns, accessToken, user.lastUpdated, 1);
-    user.runs = [...newRuns, ...user.runs];
-
-    newRuns.forEach(newRun => {
-      user.totalDistance += newRun.distance;
-      user.totalTime += newRun.time;
-      user.totalRuns += 1;
-      if (!user.longestRun.id || newRun.distance >= user.longestRun.distance) {
-          user.longestRun = newRun;
-      }
-
-    })
-    user.lastUpdated = new Date();
-    await user.save();
+    await updateUser(user);
   }
+}
+
+async function updateUser(user) {
+  console.log("updating " + user.name + "...")
+  const accessToken = await reAuthorize(user.refreshToken);
+  const newRuns = []
+  await getActivities(newRuns, accessToken, user.lastUpdated, 1);
+  user.runs = [...newRuns, ...user.runs];
+
+  newRuns.forEach(newRun => {
+    user.totalDistance += newRun.distance;
+    user.totalTime += newRun.time;
+    user.totalRuns += 1;
+    if (!user.longestRun.id || newRun.distance >= user.longestRun.distance) {
+        user.longestRun = newRun;
+    }
+
+  })
+  user.lastUpdated = new Date();
+  await user.save();
 }
 
 // returns an access token for the given refresh token
