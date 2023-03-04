@@ -26,13 +26,14 @@ module.exports = {
       )
     .addUserOption(option => option.setName('user').setDescription('Compare your activity with another user')),
       async execute(interaction) {
+        await interaction.deferReply();
         if (!(await User.findOne({discordId : interaction.user.id}))) {
-          await interaction.reply(`Error occurred: ${interaction.user.username} not registered to Achilles`)
+          await interaction.editReply(`Error occurred: ${interaction.user.username} not registered to Achilles`)
           return;
         }
         const guild = await Guild.findOne({guildId: interaction.guild.id})
         if (!guild.members.map(member => member.id).includes(interaction.user.id)) {
-          await interaction.reply(`Error occurred: ${interaction.user.username} is not registered to this server\'s leaderboard`)
+          await interaction.editReply(`Error occurred: ${interaction.user.username} is not registered to this server\'s leaderboard`)
           return;
         }
         const unitOfTime = interaction.options._hoistedOptions.filter(option => option.name == 'period')[0].value
@@ -47,7 +48,7 @@ module.exports = {
         if (interaction.options._hoistedOptions.filter(option => option.name == 'user').length > 0) {
           let other = interaction.options._hoistedOptions.filter(option => option.name == 'user')[0]
           if (!guild.members.map(member => member.id).includes(other.user.id)) {
-            await interaction.reply(`Error occurred: ${other.user.username} is not registered to this server\'s leaderboard`)
+            await interaction.editReply(`Error occurred: ${other.user.username} is not registered to this server\'s leaderboard`)
             return;
           }
           const [, otherDataset] = await getRunData(other.user.id, unitOfTime, nPeriods + 1)
@@ -56,7 +57,7 @@ module.exports = {
         }
         const graph = await plotData(dates, datasets, users, unitOfTime)
         console.log('graph', graph)
-        await interaction.reply({files: [graph]})
+        await interaction.editReply({files: [graph]})
       }
 };
 
