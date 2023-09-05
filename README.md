@@ -15,8 +15,9 @@ Achilles is a Discord bot that allows you and your mates to compare your athleti
 
 
 ## Things to note
+- Join the development community here and see the bot in action: https://discord.gg/qcSu2bqnv
 - The bot uses the Strava API to gain all relevant data.
 - Due to pagination and limited requests from Strava's API, when a new user registers, only runs later than the start of the previous year are recorded
 - The bot needs to update all users first via the command \leaderboard before commands like \profile are run (at the very start)
 - If a server kicks the bot, their data is deleted in compliance with Discord's data policies.
-- The bot can be added to a server by clicking [here](https://discord.com/oauth2/authorize?client_id=925565690054856735&permissions=8&scope=bot%20applications.commands)!
+- The bot can be added to a server by clicking [here](https://discord.com/oauth2/authorize?client_id=925565690054856735&permissions=8&scope=bot%20applications.commands)! (Deployment has temporarily halted as it costs money)
